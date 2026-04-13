@@ -228,7 +228,6 @@ body { font-family: 'Noto Sans TC', system-ui, sans-serif; background: linear-gr
 
   /* ── Helpers ── */
   function esc(s) { var d = document.createElement("div"); d.textContent = s; return d.innerHTML; }
-  function clamp(v, lo, hi) { return Math.max(lo, Math.min(hi, v)); }
 
   /* ── Render ── */
   function render() {
@@ -562,8 +561,8 @@ body { font-family: 'Noto Sans TC', system-ui, sans-serif; background: linear-gr
     root.querySelectorAll("[data-img-clear]").forEach(function(btn) {
       btn.addEventListener("click", function() {
         var id = btn.getAttribute("data-img-clear");
-        if (id === "media") { if (state.mediaUrl) URL.revokeObjectURL(state.mediaUrl); state.mediaUrl = null; }
-        else { if (state.iconUrl) URL.revokeObjectURL(state.iconUrl); state.iconUrl = null; }
+        if (id === "media") { state.mediaUrl = null; }
+        else { state.iconUrl = null; }
         render();
       });
     });
@@ -694,8 +693,6 @@ body { font-family: 'Noto Sans TC', system-ui, sans-serif; background: linear-gr
 
   /* ── Actions ── */
   function resetAll() {
-    if (state.mediaUrl) URL.revokeObjectURL(state.mediaUrl);
-    if (state.iconUrl) URL.revokeObjectURL(state.iconUrl);
     state.styles = Object.assign({}, DEFAULT_STYLES);
     state.visibility = { body: true, advertiserName: true, advertiserIcon: true };
     state.mediaUrl = null;
@@ -775,16 +772,13 @@ body { font-family: 'Noto Sans TC', system-ui, sans-serif; background: linear-gr
     // template
     parts.push("t=" + encodeURIComponent(state.template));
 
-    // style params
+    // style params — always encode all
     for (var styleKey in s) {
       var sk = reverseMap[styleKey];
       if (!sk) continue;
       var val = s[styleKey];
-      // Skip if same as default
-      if (val === DEFAULT_STYLES[styleKey]) continue;
       if (URL_COLOR_KEYS.indexOf(sk) !== -1) {
-        // Strip # from color values
-        var cv = String(val).replace(/^#/, "");
+        var cv = (val === "transparent") ? "transparent" : String(val).replace(/^#/, "");
         parts.push(sk + "=" + encodeURIComponent(cv));
       } else if (URL_NUMBER_KEYS.indexOf(sk) !== -1) {
         parts.push(sk + "=" + val);
@@ -793,12 +787,12 @@ body { font-family: 'Noto Sans TC', system-ui, sans-serif; background: linear-gr
       }
     }
 
-    // visibility toggles
-    if (!state.visibility.body) parts.push("vb=0");
-    if (!state.visibility.advertiserName) parts.push("vn=0");
-    if (!state.visibility.advertiserIcon) parts.push("vi=0");
+    // visibility toggles — always encode
+    parts.push("vb=" + (state.visibility.body ? "1" : "0"));
+    parts.push("vn=" + (state.visibility.advertiserName ? "1" : "0"));
+    parts.push("vi=" + (state.visibility.advertiserIcon ? "1" : "0"));
 
-    var baseUrl = location.href.split("?")[0];
+    var baseUrl = location.href.split("?")[0].split("#")[0];
     var url = baseUrl + "?" + parts.join("&");
 
     var onSuccess = function() {
@@ -825,8 +819,8 @@ body { font-family: 'Noto Sans TC', system-ui, sans-serif; background: linear-gr
     if (!search || search.length < 2) return;
     var params = {};
     search.substring(1).split("&").forEach(function(pair) {
-      var kv = pair.split("=");
-      if (kv.length === 2) params[kv[0]] = decodeURIComponent(kv[1]);
+      var idx = pair.indexOf("=");
+      if (idx > 0) params[pair.substring(0, idx)] = decodeURIComponent(pair.substring(idx + 1));
     });
 
     // template
@@ -849,9 +843,9 @@ body { font-family: 'Noto Sans TC', system-ui, sans-serif; background: linear-gr
     }
 
     // visibility
-    if (params.vb === "0") state.visibility.body = false;
-    if (params.vn === "0") state.visibility.advertiserName = false;
-    if (params.vi === "0") state.visibility.advertiserIcon = false;
+    if ("vb" in params) state.visibility.body = params.vb !== "0";
+    if ("vn" in params) state.visibility.advertiserName = params.vn !== "0";
+    if ("vi" in params) state.visibility.advertiserIcon = params.vi !== "0";
   }
 
   /* ── Init ── */
