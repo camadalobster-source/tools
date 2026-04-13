@@ -59,6 +59,8 @@ body { font-family: 'Noto Sans TC', system-ui, sans-serif; background: linear-gr
 .export-bar .btn-png { flex: 1; padding: 10px; background: #2962FF; color: #fff; border: none; border-radius: 6px; font-size: 13px; font-weight: 600; cursor: pointer; font-family: inherit; }
 .export-bar .btn-json { flex: 1; padding: 10px; background: #fff; color: #333; border: 1px solid #ddd; border-radius: 6px; font-size: 13px; font-weight: 500; cursor: pointer; transition: all 0.2s; font-family: inherit; }
 .export-bar .btn-json.copied { background: #E8F5E9; color: #2E7D32; border-color: #A5D6A7; }
+.export-bar .btn-link { flex: 1; padding: 10px; background: #fff; color: #333; border: 1px solid #ddd; border-radius: 6px; font-size: 13px; font-weight: 500; cursor: pointer; transition: all 0.2s; font-family: inherit; }
+.export-bar .btn-link.copied { background: #E8F5E9; color: #2E7D32; border-color: #A5D6A7; }
 .export-bar .btn-reset { padding: 10px 14px; background: #fff; color: #999; border: 1px solid #eee; border-radius: 6px; font-size: 12px; cursor: pointer; font-family: inherit; }
 .export-msg { padding: 8px 20px; background: #E8F5E9; color: #2E7D32; font-size: 12px; font-weight: 500; text-align: center; display: none; }
 
@@ -149,6 +151,21 @@ body { font-family: 'Noto Sans TC', system-ui, sans-serif; background: linear-gr
     ctaText:              { suggest: 15, max: 15 }
   };
 
+  var URL_PARAM_MAP = {
+    t: "template",
+    bg: "mainBackgroundColor",
+    pt: "primaryTextContent", ptf: "primaryTextTypeface", pts: "primaryTextSize",
+    ptc: "primaryTextTypefaceColor", ptb: "primaryTextBackgroundColor",
+    st: "secondaryTextContent", stf: "secondaryTextTypeface", sts: "secondaryTextSize",
+    stc: "secondaryTextTypefaceColor", stb: "secondaryTextBackgroundColor",
+    tt: "tertiaryTextContent", ttf: "tertiaryTextTypeface", tts: "tertiaryTextSize",
+    ttc: "tertiaryTextTypefaceColor", ttb: "tertiaryTextBackgroundColor",
+    cta: "ctaText", ctaf: "ctaTextTypeface", ctas: "ctaTextSize",
+    ctac: "ctaTypefaceColor", ctab: "ctaBackgroundColor"
+  };
+  var URL_COLOR_KEYS = ["bg","ptc","ptb","stc","stb","ttc","ttb","ctac","ctab"];
+  var URL_NUMBER_KEYS = ["pts","sts","tts","ctas"];
+
   var FONT_OPTIONS = ["Noto Sans TC", "Roboto", "Arial", "Helvetica", "Georgia", "Courier New", "system-ui"];
   var OPTIONAL_FIELDS = [
     { key: "body", label: "描述文字 (Body)" },
@@ -204,6 +221,7 @@ body { font-family: 'Noto Sans TC', system-ui, sans-serif; background: linear-gr
     mediaUrl: null,
     iconUrl: null,
     jsonCopied: false,
+    linkCopied: false,
     exportMsg: null,
     collapsible: {} // track open/close of info sections
   };
@@ -319,6 +337,7 @@ body { font-family: 'Noto Sans TC', system-ui, sans-serif; background: linear-gr
     html += '<div class="export-bar">';
     html += '<button class="btn-png" id="btn-export-png">⬇ 下載 PNG</button>';
     html += '<button class="btn-json' + (state.jsonCopied ? ' copied' : '') + '" id="btn-export-json">' + (state.jsonCopied ? '✓ 已複製' : '📋 複製 JSON') + '</button>';
+    html += '<button class="btn-link' + (state.linkCopied ? ' copied' : '') + '" id="btn-export-link">' + (state.linkCopied ? '✓ 已複製連結' : '🔗 產生連結') + '</button>';
     html += '<button class="btn-reset" id="btn-reset">↺ 重置</button></div>';
     html += '<div class="export-msg" id="export-msg"' + (state.exportMsg ? ' style="display:block"' : '') + '>' + (state.exportMsg || '') + '</div>';
     html += '</div>'; /* end col-preview */
@@ -643,6 +662,10 @@ body { font-family: 'Noto Sans TC', system-ui, sans-serif; background: linear-gr
     var btnJson = document.getElementById("btn-export-json");
     if (btnJson) btnJson.addEventListener("click", exportJSON);
 
+    // Export Link
+    var btnLink = document.getElementById("btn-export-link");
+    if (btnLink) btnLink.addEventListener("click", exportLink);
+
     // Reset
     var btnReset = document.getElementById("btn-reset");
     if (btnReset) btnReset.addEventListener("click", resetAll);
@@ -679,6 +702,7 @@ body { font-family: 'Noto Sans TC', system-ui, sans-serif; background: linear-gr
     state.iconUrl = null;
     state.exportMsg = null;
     state.jsonCopied = false;
+    state.linkCopied = false;
     render();
   }
 
@@ -740,7 +764,98 @@ body { font-family: 'Noto Sans TC', system-ui, sans-serif; background: linear-gr
     });
   }
 
+  /* ── Share link ── */
+  function exportLink() {
+    var s = state.styles;
+    var parts = [];
+    // Reverse map: style key → short key
+    var reverseMap = {};
+    for (var short in URL_PARAM_MAP) { reverseMap[URL_PARAM_MAP[short]] = short; }
+
+    // template
+    parts.push("t=" + encodeURIComponent(state.template));
+
+    // style params
+    for (var styleKey in s) {
+      var sk = reverseMap[styleKey];
+      if (!sk) continue;
+      var val = s[styleKey];
+      // Skip if same as default
+      if (val === DEFAULT_STYLES[styleKey]) continue;
+      if (URL_COLOR_KEYS.indexOf(sk) !== -1) {
+        // Strip # from color values
+        var cv = String(val).replace(/^#/, "");
+        parts.push(sk + "=" + encodeURIComponent(cv));
+      } else if (URL_NUMBER_KEYS.indexOf(sk) !== -1) {
+        parts.push(sk + "=" + val);
+      } else {
+        parts.push(sk + "=" + encodeURIComponent(val));
+      }
+    }
+
+    // visibility toggles
+    if (!state.visibility.body) parts.push("vb=0");
+    if (!state.visibility.advertiserName) parts.push("vn=0");
+    if (!state.visibility.advertiserIcon) parts.push("vi=0");
+
+    var baseUrl = location.href.split("?")[0];
+    var url = baseUrl + "?" + parts.join("&");
+
+    var onSuccess = function() {
+      state.linkCopied = true;
+      var btn = document.getElementById("btn-export-link");
+      if (btn) { btn.textContent = "✓ 已複製連結"; btn.classList.add("copied"); }
+      setTimeout(function() {
+        state.linkCopied = false;
+        var btn2 = document.getElementById("btn-export-link");
+        if (btn2) { btn2.textContent = "🔗 產生連結"; btn2.classList.remove("copied"); }
+      }, 2000);
+    };
+    navigator.clipboard.writeText(url).then(onSuccess).catch(function() {
+      var ta = document.createElement("textarea");
+      ta.value = url; ta.style.position = "fixed"; ta.style.left = "-9999px";
+      document.body.appendChild(ta); ta.select(); document.execCommand("copy");
+      document.body.removeChild(ta);
+      onSuccess();
+    });
+  }
+
+  function parseUrlParams() {
+    var search = location.search;
+    if (!search || search.length < 2) return;
+    var params = {};
+    search.substring(1).split("&").forEach(function(pair) {
+      var kv = pair.split("=");
+      if (kv.length === 2) params[kv[0]] = decodeURIComponent(kv[1]);
+    });
+
+    // template
+    if (params.t === "medium" || params.t === "small") state.template = params.t;
+
+    // style params
+    for (var short in URL_PARAM_MAP) {
+      if (short === "t") continue;
+      if (!(short in params)) continue;
+      var styleKey = URL_PARAM_MAP[short];
+      var val = params[short];
+      if (URL_COLOR_KEYS.indexOf(short) !== -1) {
+        // Add # back, handle "transparent"
+        val = (val === "transparent") ? "transparent" : "#" + val;
+      } else if (URL_NUMBER_KEYS.indexOf(short) !== -1) {
+        val = Number(val);
+        if (isNaN(val)) continue;
+      }
+      state.styles[styleKey] = val;
+    }
+
+    // visibility
+    if (params.vb === "0") state.visibility.body = false;
+    if (params.vn === "0") state.visibility.advertiserName = false;
+    if (params.vi === "0") state.visibility.advertiserIcon = false;
+  }
+
   /* ── Init ── */
+  parseUrlParams();
   render();
 })();
 </script>
