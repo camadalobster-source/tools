@@ -95,7 +95,7 @@ body { font-family: 'Noto Sans TC', system-ui, sans-serif; background: linear-gr
 .char-counter { font-size: 10px; font-family: monospace; white-space: nowrap; flex-shrink: 0; }
 
 /* Preview template cards */
-.ad-card { border-radius: 8px; overflow: hidden; border: 1px solid #e0e0e0; box-shadow: 0 2px 12px rgba(0,0,0,0.08); }
+.ad-card { overflow: hidden; border: 1px solid #e0e0e0; box-shadow: 0 2px 12px rgba(0,0,0,0.08); }
 .media-placeholder { display: flex; align-items: center; justify-content: center; position: relative; flex-shrink: 0; background: linear-gradient(135deg, #e8e8e8 0%, #d0d0d0 100%); }
 .media-placeholder .ph-text { color: #999; font-size: 11px; font-family: system-ui; text-align: center; line-height: 1.4; white-space: pre-line; }
 .media-placeholder .lock-badge { position: absolute; top: 4px; left: 4px; background: rgba(0,0,0,0.45); color: #fff; font-size: 8px; padding: 1px 5px; border-radius: 2px; font-family: system-ui; }
@@ -145,7 +145,9 @@ body { font-family: 'Noto Sans TC', system-ui, sans-serif; background: linear-gr
     ctaTextFontWeight: 500,
     ctaTextSize: 14,
     ctaTypefaceColor: "#FFFFFF",
-    ctaBackgroundColor: "#4285F4"
+    ctaBackgroundColor: "#4285F4",
+    cornerRadius: 8,
+    ctaCornerRadius: 4
   };
 
   var TEXT_LIMITS = {
@@ -165,10 +167,11 @@ body { font-family: 'Noto Sans TC', system-ui, sans-serif; background: linear-gr
     tt: "tertiaryTextContent", ttf: "tertiaryTextTypeface", ttw: "tertiaryTextFontWeight", tts: "tertiaryTextSize",
     ttc: "tertiaryTextTypefaceColor", ttb: "tertiaryTextBackgroundColor",
     cta: "ctaText", ctaf: "ctaTextTypeface", ctaw: "ctaTextFontWeight", ctas: "ctaTextSize",
-    ctac: "ctaTypefaceColor", ctab: "ctaBackgroundColor"
+    ctac: "ctaTypefaceColor", ctab: "ctaBackgroundColor",
+    cr: "cornerRadius", ctacr: "ctaCornerRadius"
   };
   var URL_COLOR_KEYS = ["bg","ptc","ptb","stc","stb","ttc","ttb","ctac","ctab"];
-  var URL_NUMBER_KEYS = ["pts","sts","tts","ctas","ptw","stw","ttw","ctaw"];
+  var URL_NUMBER_KEYS = ["pts","sts","tts","ctas","ptw","stw","ttw","ctaw","cr","ctacr"];
 
   var FONT_OPTIONS = ["Noto Sans TC", "Roboto", "Arial", "Helvetica", "Georgia", "Courier New", "system-ui"];
   var FONT_WEIGHT_OPTIONS = [
@@ -186,7 +189,10 @@ body { font-family: 'Noto Sans TC', system-ui, sans-serif; background: linear-gr
     { key: "advertiserIcon", label: "廣告主 Icon" }
   ];
   var PARAM_GROUPS = [
-    { key: "main", label: "整體背景", icon: "◻", params: [{ key: "mainBackgroundColor", label: "背景色", type: "color" }] },
+    { key: "main", label: "整體背景", icon: "◻", params: [
+      { key: "mainBackgroundColor", label: "背景色", type: "color" },
+      { key: "cornerRadius", label: "圓角", type: "number", min: 0, max: 24 }
+    ] },
     { key: "primary", label: "標題 (Primary Text)", icon: "H1", params: [
       { key: "primaryTextContent", label: "預覽文字", type: "text" },
       { key: "primaryTextTypeface", label: "字體", type: "font" },
@@ -217,7 +223,8 @@ body { font-family: 'Noto Sans TC', system-ui, sans-serif; background: linear-gr
       { key: "ctaTextFontWeight", label: "字重", type: "fontweight" },
       { key: "ctaTextSize", label: "字級", type: "number", min: 10, max: 24 },
       { key: "ctaTypefaceColor", label: "文字色", type: "color" },
-      { key: "ctaBackgroundColor", label: "背景色", type: "color" }
+      { key: "ctaBackgroundColor", label: "背景色", type: "color" },
+      { key: "ctaCornerRadius", label: "圓角", type: "number", min: 0, max: 24 }
     ]}
   ];
 
@@ -278,7 +285,7 @@ body { font-family: 'Noto Sans TC', system-ui, sans-serif; background: linear-gr
     html += '<div style="display:flex;align-items:center;gap:5px;margin-bottom:6px">';
     html += '<div style="width:12px;height:12px;border:2px solid #FF6B35;border-radius:2px"></div>';
     html += '<span style="font-size:11px;font-weight:600;color:#FF6B35">可調整（樣式）</span></div>';
-    html += '<ul style="margin:0;padding-left:18px;font-size:11px;color:#555;line-height:1.8"><li>整體背景色</li><li>標題 — 字體、字級、字色、背景色</li><li>廣告主名稱 — 同上</li><li>描述文字 — 同上</li><li>CTA 按鈕 — 同上</li></ul></div>';
+    html += '<ul style="margin:0;padding-left:18px;font-size:11px;color:#555;line-height:1.8"><li>整體背景色、圓角</li><li>標題 — 字體、字重、字級、字色、背景色</li><li>廣告主名稱 — 同上</li><li>描述文字 — 同上</li><li>CTA 按鈕 — 同上 + 圓角</li></ul></div>';
     html += '<div style="flex:1;min-width:140px">';
     html += '<div style="display:flex;align-items:center;gap:5px;margin-bottom:6px">';
     html += '<div style="width:12px;height:12px;background:#e0e0e0;border-radius:2px;display:flex;align-items:center;justify-content:center;font-size:6px">🔒</div>';
@@ -422,6 +429,43 @@ body { font-family: 'Noto Sans TC', system-ui, sans-serif; background: linear-gr
     html += '</div>'; /* end col-params */
     html += '</div>'; /* end desktop-two-col */
 
+    /* Engineer Implementation Notes */
+    var c3Open = state.collapsible["engNotes"];
+    html += '<div class="collapsible" style="margin:14px 20px 0"><button class="collapsible-btn" data-collapsible="engNotes">';
+    html += '<span class="title">🛠 工程師實作注意事項</span>';
+    html += '<span class="arrow' + (c3Open ? ' open' : '') + '">▶</span></button>';
+    html += '<div class="collapsible-body' + (c3Open ? ' open' : '') + '">';
+    html += '<div style="font-size:12px;color:#333;line-height:1.8">';
+
+    html += '<div style="font-weight:600;margin-bottom:4px;color:#2962FF">📐 整體圓角 (Corner Radius)</div>';
+    html += '<ul style="margin:0 0 10px;padding-left:18px;font-size:11px;color:#555;line-height:1.8">';
+    html += '<li><strong>Android</strong>：<code style="background:#f0f0f0;padding:1px 4px;border-radius:3px;font-size:10px">NativeTemplateStyle.Builder.withMainBackgroundColor()</code> 搭配自訂 <code style="background:#f0f0f0;padding:1px 4px;border-radius:3px;font-size:10px">CardView</code> 的 <code style="background:#f0f0f0;padding:1px 4px;border-radius:3px;font-size:10px">app:cardCornerRadius</code></li>';
+    html += '<li><strong>iOS</strong>：在 <code style="background:#f0f0f0;padding:1px 4px;border-radius:3px;font-size:10px">GADNativeAdView</code> 的容器 <code style="background:#f0f0f0;padding:1px 4px;border-radius:3px;font-size:10px">layer.cornerRadius</code> 設定，需同時設 <code style="background:#f0f0f0;padding:1px 4px;border-radius:3px;font-size:10px">clipsToBounds = true</code></li>';
+    html += '<li>圓角值以 dp / pt 為單位，建議範圍 0–24</li>';
+    html += '</ul>';
+
+    html += '<div style="font-weight:600;margin-bottom:4px;color:#2962FF">🔘 CTA 按鈕圓角</div>';
+    html += '<ul style="margin:0 0 10px;padding-left:18px;font-size:11px;color:#555;line-height:1.8">';
+    html += '<li><strong>Android</strong>：CTA 按鈕使用 <code style="background:#f0f0f0;padding:1px 4px;border-radius:3px;font-size:10px">GradientDrawable</code> 的 <code style="background:#f0f0f0;padding:1px 4px;border-radius:3px;font-size:10px">setCornerRadius()</code> 或 <code style="background:#f0f0f0;padding:1px 4px;border-radius:3px;font-size:10px">MaterialButton</code> 的 <code style="background:#f0f0f0;padding:1px 4px;border-radius:3px;font-size:10px">app:cornerRadius</code></li>';
+    html += '<li><strong>iOS</strong>：對 CTA 按鈕的 <code style="background:#f0f0f0;padding:1px 4px;border-radius:3px;font-size:10px">layer.cornerRadius</code> 設值</li>';
+    html += '</ul>';
+
+    html += '<div style="font-weight:600;margin-bottom:4px;color:#2962FF">🔤 字重 (Font Weight)</div>';
+    html += '<ul style="margin:0 0 10px;padding-left:18px;font-size:11px;color:#555;line-height:1.8">';
+    html += '<li><strong>Android</strong>：<code style="background:#f0f0f0;padding:1px 4px;border-radius:3px;font-size:10px">Typeface.create(family, weight, false)</code>（API 28+）或用 <code style="background:#f0f0f0;padding:1px 4px;border-radius:3px;font-size:10px">ResourcesCompat</code> 載入特定字重字型檔</li>';
+    html += '<li><strong>iOS</strong>：<code style="background:#f0f0f0;padding:1px 4px;border-radius:3px;font-size:10px">UIFont.systemFont(ofSize:weight:)</code> 或用 <code style="background:#f0f0f0;padding:1px 4px;border-radius:3px;font-size:10px">UIFontDescriptor</code> 搭配 <code style="background:#f0f0f0;padding:1px 4px;border-radius:3px;font-size:10px">UIFont.Weight</code></li>';
+    html += '<li>數值對應：100=Thin, 300=Light, 400=Regular, 500=Medium, 600=SemiBold, 700=Bold, 900=Black</li>';
+    html += '</ul>';
+
+    html += '<div style="font-weight:600;margin-bottom:4px;color:#2962FF">⚙ 其他注意事項</div>';
+    html += '<ul style="margin:0 0 6px;padding-left:18px;font-size:11px;color:#555;line-height:1.8">';
+    html += '<li>所有顏色值均為 HEX 格式（例如 <code style="background:#f0f0f0;padding:1px 4px;border-radius:3px;font-size:10px">#4285F4</code>），Android 需轉為 <code style="background:#f0f0f0;padding:1px 4px;border-radius:3px;font-size:10px">Color.parseColor()</code>，iOS 用 <code style="background:#f0f0f0;padding:1px 4px;border-radius:3px;font-size:10px">UIColor(hex:)</code> extension</li>';
+    html += '<li>字級單位：Android 使用 sp，iOS 使用 pt，此工具中的數值可直接對應</li>';
+    html += '<li>匯出的 JSON 可直接作為工程實作的參考規格，欄位名稱與 Google Native Template SDK 一致</li>';
+    html += '<li>背景色 <code style="background:#f0f0f0;padding:1px 4px;border-radius:3px;font-size:10px">transparent</code> 在 Android 對應 <code style="background:#f0f0f0;padding:1px 4px;border-radius:3px;font-size:10px">Color.TRANSPARENT</code>，iOS 對應 <code style="background:#f0f0f0;padding:1px 4px;border-radius:3px;font-size:10px">UIColor.clear</code></li>';
+    html += '</ul>';
+    html += '</div></div></div>';
+
     /* Doc links */
     html += '<div class="doc-links"><div class="heading">官方參考文件</div><div class="links">';
     DOC_LINKS.forEach(function(d) {
@@ -460,13 +504,13 @@ body { font-family: 'Noto Sans TC', system-ui, sans-serif; background: linear-gr
   function renderMedium() {
     var s = state.styles, v = state.visibility;
     var showIcon = v.advertiserIcon, showSec = v.advertiserName, showTer = v.body;
-    var h = '<div class="ad-card" style="width:320px;background-color:' + esc(s.mainBackgroundColor) + ';outline:' + outline3Style("main") + '">';
+    var h = '<div class="ad-card" style="width:320px;background-color:' + esc(s.mainBackgroundColor) + ';border-radius:' + s.cornerRadius + 'px;outline:' + outline3Style("main") + '">';
 
     // Media
     if (state.mediaUrl) {
-      h += '<img src="' + state.mediaUrl + '" style="width:100%;height:180px;object-fit:cover;display:block">';
+      h += '<img src="' + state.mediaUrl + '" style="width:100%;height:180px;object-fit:cover;display:block;border-radius:' + s.cornerRadius + 'px ' + s.cornerRadius + 'px 0 0">';
     } else {
-      h += '<div class="media-placeholder" style="width:100%;height:180px"><div class="ph-text">▶ Media / Image\n320 × 180</div><div class="lock-badge">🔒 不可調整</div></div>';
+      h += '<div class="media-placeholder" style="width:100%;height:180px;border-radius:' + s.cornerRadius + 'px ' + s.cornerRadius + 'px 0 0"><div class="ph-text">▶ Media / Image\n320 × 180</div><div class="lock-badge">🔒 不可調整</div></div>';
     }
 
     h += '<div style="padding:12px">';
@@ -493,7 +537,7 @@ body { font-family: 'Noto Sans TC', system-ui, sans-serif; background: linear-gr
       h += '<div style="font-family:' + esc(s.tertiaryTextTypeface) + ';font-size:' + s.tertiaryTextSize + 'px;color:' + esc(s.tertiaryTextTypefaceColor) + ';background-color:' + esc(s.tertiaryTextBackgroundColor) + ';font-weight:' + s.tertiaryTextFontWeight + ';line-height:1.5;margin-bottom:10px;outline:' + outlineStyle("tertiary") + ';outline-offset:2px;border-radius:2px;overflow:hidden;text-overflow:ellipsis;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical">' + esc(s.tertiaryTextContent) + '</div>';
     }
     // CTA
-    h += '<div style="font-family:' + esc(s.ctaTextTypeface) + ';font-size:' + s.ctaTextSize + 'px;color:' + esc(s.ctaTypefaceColor) + ';background-color:' + esc(s.ctaBackgroundColor) + ';padding:8px 16px;border-radius:4px;text-align:center;font-weight:' + s.ctaTextFontWeight + ';outline:' + outlineStyle("cta") + ';outline-offset:2px;margin-top:' + (showTer ? '0' : '10px') + '">' + esc(s.ctaText) + '</div>';
+    h += '<div style="font-family:' + esc(s.ctaTextTypeface) + ';font-size:' + s.ctaTextSize + 'px;color:' + esc(s.ctaTypefaceColor) + ';background-color:' + esc(s.ctaBackgroundColor) + ';padding:8px 16px;border-radius:' + s.ctaCornerRadius + 'px;text-align:center;font-weight:' + s.ctaTextFontWeight + ';outline:' + outlineStyle("cta") + ';outline-offset:2px;margin-top:' + (showTer ? '0' : '10px') + '">' + esc(s.ctaText) + '</div>';
     h += '</div>';
     // Ad badge
     h += '<div style="padding:0 12px 8px;display:flex;align-items:center;gap:4px">';
@@ -506,7 +550,7 @@ body { font-family: 'Noto Sans TC', system-ui, sans-serif; background: linear-gr
   function renderSmall() {
     var s = state.styles, v = state.visibility;
     var showIcon = v.advertiserIcon, showSec = v.advertiserName, showTer = v.body;
-    var h = '<div class="ad-card" style="width:320px;background-color:' + esc(s.mainBackgroundColor) + ';display:flex;outline:' + outline3Style("main") + '">';
+    var h = '<div class="ad-card" style="width:320px;background-color:' + esc(s.mainBackgroundColor) + ';display:flex;border-radius:' + s.cornerRadius + 'px;outline:' + outline3Style("main") + '">';
 
     // Icon / media
     if (showIcon) {
@@ -533,7 +577,7 @@ body { font-family: 'Noto Sans TC', system-ui, sans-serif; background: linear-gr
     }
     // CTA
     var cs = Math.min(s.ctaTextSize, 12);
-    h += '<div style="font-family:' + esc(s.ctaTextTypeface) + ';font-size:' + cs + 'px;color:' + esc(s.ctaTypefaceColor) + ';background-color:' + esc(s.ctaBackgroundColor) + ';padding:4px 10px;border-radius:4px;text-align:center;font-weight:' + s.ctaTextFontWeight + ';outline:' + outlineStyle("cta") + ';outline-offset:1px;align-self:flex-start">' + esc(s.ctaText) + '</div>';
+    h += '<div style="font-family:' + esc(s.ctaTextTypeface) + ';font-size:' + cs + 'px;color:' + esc(s.ctaTypefaceColor) + ';background-color:' + esc(s.ctaBackgroundColor) + ';padding:4px 10px;border-radius:' + s.ctaCornerRadius + 'px;text-align:center;font-weight:' + s.ctaTextFontWeight + ';outline:' + outlineStyle("cta") + ';outline-offset:1px;align-self:flex-start">' + esc(s.ctaText) + '</div>';
     h += '</div></div>';
     return h;
   }
@@ -735,10 +779,11 @@ body { font-family: 'Noto Sans TC', system-ui, sans-serif; background: linear-gr
       optionalFieldsVisible: Object.assign({}, state.visibility),
       nativeTemplateStyle: {
         mainBackgroundColor: s.mainBackgroundColor,
+        cornerRadius: s.cornerRadius,
         primaryText: { typeface: s.primaryTextTypeface, fontWeight: s.primaryTextFontWeight, size: s.primaryTextSize, typefaceColor: s.primaryTextTypefaceColor, backgroundColor: s.primaryTextBackgroundColor },
         secondaryText: { typeface: s.secondaryTextTypeface, fontWeight: s.secondaryTextFontWeight, size: s.secondaryTextSize, typefaceColor: s.secondaryTextTypefaceColor, backgroundColor: s.secondaryTextBackgroundColor },
         tertiaryText: { typeface: s.tertiaryTextTypeface, fontWeight: s.tertiaryTextFontWeight, size: s.tertiaryTextSize, typefaceColor: s.tertiaryTextTypefaceColor, backgroundColor: s.tertiaryTextBackgroundColor },
-        callToAction: { text: s.ctaText, typeface: s.ctaTextTypeface, fontWeight: s.ctaTextFontWeight, size: s.ctaTextSize, typefaceColor: s.ctaTypefaceColor, backgroundColor: s.ctaBackgroundColor }
+        callToAction: { text: s.ctaText, typeface: s.ctaTextTypeface, fontWeight: s.ctaTextFontWeight, size: s.ctaTextSize, typefaceColor: s.ctaTypefaceColor, backgroundColor: s.ctaBackgroundColor, cornerRadius: s.ctaCornerRadius }
       }
     };
     var json = JSON.stringify(d, null, 2);
