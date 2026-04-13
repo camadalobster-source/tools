@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Tools</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: 'Noto Sans TC', system-ui, sans-serif; background: #f7f7f8; min-height: 100vh; padding: 40px 20px; }
+.container { max-width: 600px; margin: 0 auto; }
+h1 { font-size: 24px; font-weight: 700; color: #1a1a1a; margin-bottom: 8px; }
+.subtitle { font-size: 13px; color: #888; margin-bottom: 32px; }
+.tool-card {
+  display: block; text-decoration: none; color: inherit;
+  background: #fff; border: 1px solid #e0e0e0; border-radius: 10px;
+  padding: 18px 20px; margin-bottom: 12px;
+  transition: all 0.15s;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.04);
+}
+.tool-card:hover { border-color: #2962FF; box-shadow: 0 2px 12px rgba(41,98,255,0.1); transform: translateY(-1px); }
+.tool-name { font-size: 15px; font-weight: 600; color: #1a1a1a; margin-bottom: 4px; }
+.tool-desc { font-size: 12px; color: #666; line-height: 1.6; }
+.tool-tag { display: inline-block; font-size: 10px; color: #2962FF; background: #EEF2FF; padding: 2px 8px; border-radius: 4; margin-top: 8px; }
+</style>
+</head>
+<body>
+<div class="container">
+  <h1>🛠 Tools</h1>
+  <p class="subtitle">內部工具集合</p>
+
+  <a class="tool-card" href="./native-ad-customizer.html">
+    <div class="tool-name">Google Native Ad Template 樣式調整器</div>
+    <div class="tool-desc">
+      基於 Google 官方 Native Template，即時調整 App 原生廣告的字體、顏色、背景等樣式參數，
+      模擬選填欄位缺失狀態，匯出 PNG / JSON 供設計師與工程師協作。
+    </div>
+    <span class="tool-tag">Ad · Design · App</span>
+  </a>
+
+  <!-- 新增工具時複製上方 tool-card 區塊即可 -->
+</div>
+</body>
+</html>
