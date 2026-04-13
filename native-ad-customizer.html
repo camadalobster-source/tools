@@ -5,567 +5,744 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Google Native Ad Template 樣式調整器</title>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;600;700&display=swap" rel="stylesheet">
-<script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.3.1/umd/react.production.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.3.1/umd/react-dom.production.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.26.9/babel.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 <style>
 * { box-sizing: border-box; margin: 0; padding: 0; }
 body { font-family: 'Noto Sans TC', system-ui, sans-serif; background: linear-gradient(145deg, #f7f7f8 0%, #eef0f2 100%); min-height: 100vh; }
+#root { font-family: 'Noto Sans TC', system-ui, sans-serif; color: #1a1a1a; max-width: 560px; width: 100%; margin: 0 auto; min-height: 100vh; background: #fff; }
+@media (min-width: 700px) {
+  #root { max-width: 960px; }
+  .desktop-two-col { display: flex; gap: 24px; align-items: flex-start; }
+  .desktop-two-col .col-preview { flex: 1; position: sticky; top: 20px; }
+  .desktop-two-col .col-params { flex: 1; min-width: 0; }
+}
+
+/* Collapsible sections */
+.collapsible { border-radius: 8px; border: 1px solid #eee; background: #f7f8fa; margin-bottom: 10px; overflow: hidden; }
+.collapsible-btn { width: 100%; display: flex; align-items: center; justify-content: space-between; padding: 10px 14px; border: none; background: transparent; cursor: pointer; text-align: left; font-family: inherit; }
+.collapsible-btn .title { font-size: 12px; font-weight: 600; color: #333; }
+.collapsible-btn .arrow { font-size: 11px; color: #bbb; transition: transform 0.15s; }
+.collapsible-btn .arrow.open { transform: rotate(90deg); }
+.collapsible-body { padding: 0 14px 12px; display: none; }
+.collapsible-body.open { display: block; }
+
+/* Template selector */
+.tmpl-btn { flex: 1; padding: 8px 12px; border: 1px solid #ddd; border-radius: 8px; background: #fafafa; cursor: pointer; text-align: left; font-family: inherit; }
+.tmpl-btn.active { border: 2px solid #2962FF; background: #EEF2FF; }
+.tmpl-btn .name { font-size: 13px; font-weight: 600; color: #333; }
+.tmpl-btn.active .name { color: #2962FF; }
+.tmpl-btn .desc { font-size: 10px; color: #888; margin-top: 2px; }
+
+/* Toggle chip */
+.chip { display: inline-flex; align-items: center; gap: 5px; padding: 5px 10px; border-radius: 16px; border: 1.5px solid #d0d0d0; background: #f5f5f5; color: #999; font-size: 11px; font-weight: 500; cursor: pointer; transition: all 0.15s; font-family: inherit; }
+.chip.active { border-color: #2962FF; background: #EEF2FF; color: #2962FF; }
+.chip.required { cursor: default; }
+.chip .badge { font-size: 9px; background: #E8F5E9; color: #2E7D32; padding: 1px 4px; border-radius: 3px; font-weight: 600; }
+
+/* Image upload */
+.img-upload { display: flex; align-items: center; gap: 10px; padding: 6px 0; }
+.img-upload .label-col { min-width: 90px; }
+.img-upload .label-col .main { font-size: 12px; font-weight: 500; color: #333; }
+.img-upload .label-col .hint { font-size: 10px; color: #999; }
+.upload-btn { font-size: 11px; color: #2962FF; background: #EEF2FF; border: 1px solid #dce3f0; border-radius: 4px; padding: 5px 12px; cursor: pointer; font-family: inherit; }
+.remove-btn { font-size: 10px; color: #e53935; background: none; border: 1px solid #ffcdd2; border-radius: 4px; padding: 3px 8px; cursor: pointer; font-family: inherit; }
+.replace-btn { font-size: 10px; color: #2962FF; background: none; border: 1px solid #bbdefb; border-radius: 4px; padding: 3px 8px; cursor: pointer; font-family: inherit; }
+.thumb { height: 36px; border-radius: 4px; border: 1px solid #ddd; object-fit: cover; }
+
+/* Preview area */
+.preview-area { padding: 20px; display: flex; flex-direction: column; align-items: center; gap: 12px; background: repeating-conic-gradient(#f0f0f0 0% 25%, #fafafa 0% 50%) 50%/20px 20px; border-bottom: 1px solid #eee; }
+.preview-label { font-size: 10px; color: #999; letter-spacing: 1px; text-transform: uppercase; display: flex; align-items: center; gap: 8px; }
+.hidden-badge { background: #FFF3E0; color: #E65100; padding: 2px 6px; border-radius: 3px; font-size: 9px; font-weight: 600; }
+
+/* Export bar */
+.export-bar { display: flex; gap: 8px; padding: 10px 20px; border-bottom: 1px solid #eee; align-items: center; }
+.export-bar .btn-png { flex: 1; padding: 10px; background: #2962FF; color: #fff; border: none; border-radius: 6px; font-size: 13px; font-weight: 600; cursor: pointer; font-family: inherit; }
+.export-bar .btn-json { flex: 1; padding: 10px; background: #fff; color: #333; border: 1px solid #ddd; border-radius: 6px; font-size: 13px; font-weight: 500; cursor: pointer; transition: all 0.2s; font-family: inherit; }
+.export-bar .btn-json.copied { background: #E8F5E9; color: #2E7D32; border-color: #A5D6A7; }
+.export-bar .btn-reset { padding: 10px 14px; background: #fff; color: #999; border: 1px solid #eee; border-radius: 6px; font-size: 12px; cursor: pointer; font-family: inherit; }
+.export-msg { padding: 8px 20px; background: #E8F5E9; color: #2E7D32; font-size: 12px; font-weight: 500; text-align: center; display: none; }
+
+/* Param groups */
+.param-header { font-size: 11px; color: #999; letter-spacing: 1px; text-transform: uppercase; padding: 12px 20px 6px; }
+.param-group { border-bottom: 1px solid #f0f0f0; transition: opacity 0.15s; }
+.param-group.hidden-field { opacity: 0.4; }
+.param-group-btn { width: 100%; display: flex; align-items: center; gap: 8px; padding: 10px 20px; border: none; background: transparent; cursor: pointer; text-align: left; font-family: inherit; }
+.param-group-btn.expanded { background: #fafafa; }
+.param-group.hidden-field .param-group-btn { cursor: default; }
+.param-icon { width: 28px; height: 28px; display: flex; align-items: center; justify-content: center; background: #f0f0f0; color: #666; border-radius: 6px; font-size: 11px; font-weight: 700; font-family: system-ui; flex-shrink: 0; }
+.param-icon.highlight { background: #FF6B35; color: #fff; }
+.param-group-label { flex: 1; font-size: 13px; font-weight: 500; color: #333; }
+.param-group.hidden-field .param-group-label { color: #bbb; }
+.param-group-label .hid-tag { font-size: 10px; color: #ccc; margin-left: 6px; }
+.param-arrow { font-size: 12px; color: #ccc; transition: transform 0.15s; }
+.param-arrow.open { transform: rotate(90deg); }
+.param-body { padding: 4px 20px 14px 56px; display: none; }
+.param-body.open { display: block; }
+.param-row { display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; gap: 12px; }
+.param-row label { font-size: 12px; color: #555; min-width: 56px; flex-shrink: 0; }
+.color-input { display: flex; align-items: center; gap: 6px; }
+.color-input input[type=color] { width: 32px; height: 28px; border: 1px solid #d0d0d0; border-radius: 4px; padding: 0; cursor: pointer; }
+.color-input input[type=text] { width: 90px; font-size: 12px; font-family: monospace; padding: 4px 6px; border: 1px solid #d0d0d0; border-radius: 4px; background: #fafafa; }
+.param-row select { font-size: 12px; padding: 4px 6px; border: 1px solid #d0d0d0; border-radius: 4px; background: #fafafa; min-width: 130px; font-family: inherit; }
+.param-row .range-wrap { display: flex; align-items: center; gap: 6px; }
+.param-row .range-wrap input[type=range] { width: 80px; }
+.param-row .range-wrap span { font-size: 12px; font-family: monospace; color: #666; min-width: 24px; }
+.param-row input[type=text] { font-size: 12px; padding: 4px 6px; border: 1px solid #d0d0d0; border-radius: 4px; background: #fafafa; min-width: 160px; flex: 1; }
+.text-with-counter { display: flex; align-items: center; gap: 6px; flex: 1; min-width: 0; }
+.text-with-counter input[type=text] { min-width: 0; }
+.char-counter { font-size: 10px; font-family: monospace; white-space: nowrap; flex-shrink: 0; }
+
+/* Preview template cards */
+.ad-card { border-radius: 8px; overflow: hidden; border: 1px solid #e0e0e0; box-shadow: 0 2px 12px rgba(0,0,0,0.08); }
+.media-placeholder { display: flex; align-items: center; justify-content: center; position: relative; flex-shrink: 0; background: linear-gradient(135deg, #e8e8e8 0%, #d0d0d0 100%); }
+.media-placeholder .ph-text { color: #999; font-size: 11px; font-family: system-ui; text-align: center; line-height: 1.4; white-space: pre-line; }
+.media-placeholder .lock-badge { position: absolute; top: 4px; left: 4px; background: rgba(0,0,0,0.45); color: #fff; font-size: 8px; padding: 1px 5px; border-radius: 2px; font-family: system-ui; }
+
+/* Doc links */
+.doc-links { padding: 14px 20px; background: #f8f9fa; border-top: 1px solid #eee; }
+.doc-links .heading { font-size: 11px; font-weight: 600; color: #888; margin-bottom: 8px; }
+.doc-links .links { display: flex; gap: 8px; flex-wrap: wrap; }
+.doc-links a { font-size: 11px; color: #2962FF; text-decoration: none; padding: 4px 10px; background: #EEF2FF; border-radius: 4px; border: 1px solid #dce3f0; }
 </style>
 </head>
 <body>
 <div id="root"></div>
-<script type="text/babel">
-const { useState, useRef, useCallback } = React;
 
-const TEMPLATES = {
-  medium: { label: "Medium", description: "半頁至 3/4 頁視圖，適合 feed 或 landing page" },
-  small: { label: "Small", description: "長條矩形，適合 recycler view / in-feed" },
-};
+<script>
+(function() {
+  "use strict";
 
-const DEFAULT_STYLES = {
-  mainBackgroundColor: "#FFFFFF",
-  primaryTextContent: "廣告標題文字範例",
-  primaryTextTypeface: "Noto Sans TC",
-  primaryTextSize: 16,
-  primaryTextTypefaceColor: "#1A1A1A",
-  primaryTextBackgroundColor: "transparent",
-  secondaryTextContent: "廣告主名稱",
-  secondaryTextTypeface: "Noto Sans TC",
-  secondaryTextSize: 13,
-  secondaryTextTypefaceColor: "#666666",
-  secondaryTextBackgroundColor: "transparent",
-  tertiaryTextContent: "這是廣告描述文字，說明產品或服務的特色與優勢，吸引使用者點擊了解更多。",
-  tertiaryTextTypeface: "Noto Sans TC",
-  tertiaryTextSize: 13,
-  tertiaryTextTypefaceColor: "#444444",
-  tertiaryTextBackgroundColor: "transparent",
-  ctaText: "瞭解詳情",
-  ctaTextTypeface: "Noto Sans TC",
-  ctaTextSize: 14,
-  ctaTypefaceColor: "#FFFFFF",
-  ctaBackgroundColor: "#4285F4",
-};
-
-const FONT_OPTIONS = ["Noto Sans TC", "Roboto", "Arial", "Helvetica", "Georgia", "Courier New", "system-ui"];
-const OPTIONAL_FIELDS = [
-  { key: "body", label: "描述文字 (Body)" },
-  { key: "advertiserName", label: "廣告主名稱" },
-  { key: "advertiserIcon", label: "廣告主 Icon" },
-];
-const PARAM_GROUPS = [
-  { key: "main", label: "整體背景", icon: "◻", params: [{ key: "mainBackgroundColor", label: "背景色", type: "color" }] },
-  { key: "primary", label: "標題 (Primary Text)", icon: "H1", params: [
-    { key: "primaryTextContent", label: "預覽文字", type: "text" },
-    { key: "primaryTextTypeface", label: "字體", type: "font" },
-    { key: "primaryTextSize", label: "字級", type: "number", min: 10, max: 32 },
-    { key: "primaryTextTypefaceColor", label: "文字色", type: "color" },
-    { key: "primaryTextBackgroundColor", label: "背景色", type: "color" },
-  ]},
-  { key: "secondary", label: "廣告主名稱 (Secondary)", icon: "H2", optionalFieldKey: "advertiserName", params: [
-    { key: "secondaryTextContent", label: "預覽文字", type: "text" },
-    { key: "secondaryTextTypeface", label: "字體", type: "font" },
-    { key: "secondaryTextSize", label: "字級", type: "number", min: 8, max: 24 },
-    { key: "secondaryTextTypefaceColor", label: "文字色", type: "color" },
-    { key: "secondaryTextBackgroundColor", label: "背景色", type: "color" },
-  ]},
-  { key: "tertiary", label: "描述文字 (Tertiary)", icon: "¶", optionalFieldKey: "body", params: [
-    { key: "tertiaryTextContent", label: "預覽文字", type: "text" },
-    { key: "tertiaryTextTypeface", label: "字體", type: "font" },
-    { key: "tertiaryTextSize", label: "字級", type: "number", min: 8, max: 24 },
-    { key: "tertiaryTextTypefaceColor", label: "文字色", type: "color" },
-    { key: "tertiaryTextBackgroundColor", label: "背景色", type: "color" },
-  ]},
-  { key: "cta", label: "CTA 按鈕", icon: "▶", params: [
-    { key: "ctaText", label: "按鈕文字", type: "text" },
-    { key: "ctaTextTypeface", label: "字體", type: "font" },
-    { key: "ctaTextSize", label: "字級", type: "number", min: 10, max: 24 },
-    { key: "ctaTypefaceColor", label: "文字色", type: "color" },
-    { key: "ctaBackgroundColor", label: "背景色", type: "color" },
-  ]},
-];
-
-function ColorInput({ value, onChange }) {
-  const t = value === "transparent";
-  return React.createElement("div", { style: { display: "flex", alignItems: "center", gap: 6 } },
-    React.createElement("input", { type: "color", value: t ? "#ffffff" : value, onChange: e => onChange(e.target.value),
-      style: { width: 32, height: 28, border: "1px solid #d0d0d0", borderRadius: 4, padding: 0, cursor: "pointer",
-        background: t ? "repeating-conic-gradient(#ccc 0% 25%, white 0% 50%) 50%/12px 12px" : value } }),
-    React.createElement("input", { type: "text", value, onChange: e => onChange(e.target.value),
-      style: { width: 90, fontSize: 12, fontFamily: "monospace", padding: "4px 6px", border: "1px solid #d0d0d0", borderRadius: 4, background: "#fafafa" } })
-  );
-}
-
-function ToggleChip({ label, active, onClick, required }) {
-  return (
-    <button onClick={required ? undefined : onClick}
-      style={{ display: "inline-flex", alignItems: "center", gap: 5, padding: "5px 10px", borderRadius: 16,
-        border: active ? "1.5px solid #2962FF" : "1.5px solid #d0d0d0",
-        background: active ? "#EEF2FF" : "#f5f5f5", color: active ? "#2962FF" : "#999",
-        fontSize: 11, fontWeight: 500, cursor: required ? "default" : "pointer", transition: "all 0.15s" }}>
-      <span style={{ fontSize: 13 }}>{active ? "☑" : "☐"}</span>
-      {label}
-      {required && <span style={{ fontSize: 9, background: "#E8F5E9", color: "#2E7D32", padding: "1px 4px", borderRadius: 3, fontWeight: 600 }}>必填</span>}
-    </button>
-  );
-}
-
-function CollapsibleSection({ title, defaultOpen, children }) {
-  const [open, setOpen] = useState(defaultOpen || false);
-  return (
-    <div style={{ borderRadius: 8, border: "1px solid #eee", background: "#f7f8fa", marginBottom: 10, overflow: "hidden" }}>
-      <button onClick={() => setOpen(!open)}
-        style={{ width: "100%", display: "flex", alignItems: "center", justifyContent: "space-between",
-          padding: "10px 14px", border: "none", background: "transparent", cursor: "pointer", textAlign: "left" }}>
-        <span style={{ fontSize: 12, fontWeight: 600, color: "#333" }}>{title}</span>
-        <span style={{ fontSize: 11, color: "#bbb", transform: open ? "rotate(90deg)" : "none", transition: "transform 0.15s" }}>▶</span>
-      </button>
-      {open && <div style={{ padding: "0 14px 12px" }}>{children}</div>}
-    </div>
-  );
-}
-
-function ImageUpload({ label, hint, currentUrl, onUpload, onClear, accept, aspectHint }) {
-  const ref = useRef(null);
-  const handleFile = (e) => {
-    const f = e.target.files && e.target.files[0];
-    if (!f) return;
-    if (currentUrl) URL.revokeObjectURL(currentUrl);
-    onUpload(URL.createObjectURL(f));
-    e.target.value = "";
+  /* ── Constants ── */
+  var TEMPLATES = {
+    medium: { label: "Medium", description: "半頁至 3/4 頁視圖，適合 feed 或 landing page" },
+    small: { label: "Small", description: "長條矩形，適合 recycler view / in-feed" }
   };
-  return (
-    <div style={{ display: "flex", alignItems: "center", gap: 10, padding: "6px 0" }}>
-      <div style={{ minWidth: 90 }}>
-        <div style={{ fontSize: 12, fontWeight: 500, color: "#333" }}>{label}</div>
-        <div style={{ fontSize: 10, color: "#999" }}>{hint}</div>
-      </div>
-      {currentUrl ? (
-        <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
-          <img src={currentUrl} style={{ height: 36, borderRadius: 4, border: "1px solid #ddd", objectFit: "cover",
-            width: aspectHint === "square" ? 36 : 64 }} />
-          <button onClick={() => { if (currentUrl) URL.revokeObjectURL(currentUrl); onClear(); }}
-            style={{ fontSize: 10, color: "#e53935", background: "none", border: "1px solid #ffcdd2", borderRadius: 4, padding: "3px 8px", cursor: "pointer" }}>
-            移除
-          </button>
-          <button onClick={() => ref.current && ref.current.click()}
-            style={{ fontSize: 10, color: "#2962FF", background: "none", border: "1px solid #bbdefb", borderRadius: 4, padding: "3px 8px", cursor: "pointer" }}>
-            替換
-          </button>
-        </div>
-      ) : (
-        <button onClick={() => ref.current && ref.current.click()}
-          style={{ fontSize: 11, color: "#2962FF", background: "#EEF2FF", border: "1px solid #dce3f0", borderRadius: 4, padding: "5px 12px", cursor: "pointer" }}>
-          上傳圖片
-        </button>
-      )}
-      <input ref={ref} type="file" accept={accept} onChange={handleFile} style={{ display: "none" }} />
-    </div>
-  );
-}
 
-function MediaPlaceholder({ width, height, label }) {
-  return (
-    <div style={{ width, height, background: "linear-gradient(135deg, #e8e8e8 0%, #d0d0d0 100%)",
-      display: "flex", alignItems: "center", justifyContent: "center", position: "relative", flexShrink: 0 }}>
-      <div style={{ color: "#999", fontSize: 11, fontFamily: "system-ui", textAlign: "center", lineHeight: 1.4, whiteSpace: "pre-line" }}>{label}</div>
-      <div style={{ position: "absolute", top: 4, left: 4, background: "rgba(0,0,0,0.45)", color: "#fff",
-        fontSize: 8, padding: "1px 5px", borderRadius: 2, fontFamily: "system-ui" }}>🔒 不可調整</div>
-    </div>
-  );
-}
+  var DEFAULT_STYLES = {
+    mainBackgroundColor: "#FFFFFF",
+    primaryTextContent: "廣告標題文字範例",
+    primaryTextTypeface: "Noto Sans TC",
+    primaryTextSize: 16,
+    primaryTextTypefaceColor: "#1A1A1A",
+    primaryTextBackgroundColor: "transparent",
+    secondaryTextContent: "廣告主名稱",
+    secondaryTextTypeface: "Noto Sans TC",
+    secondaryTextSize: 13,
+    secondaryTextTypefaceColor: "#666666",
+    secondaryTextBackgroundColor: "transparent",
+    tertiaryTextContent: "這是廣告描述文字，說明產品或服務的特色與優勢，吸引使用者點擊了解更多。",
+    tertiaryTextTypeface: "Noto Sans TC",
+    tertiaryTextSize: 13,
+    tertiaryTextTypefaceColor: "#444444",
+    tertiaryTextBackgroundColor: "transparent",
+    ctaText: "瞭解詳情",
+    ctaTextTypeface: "Noto Sans TC",
+    ctaTextSize: 14,
+    ctaTypefaceColor: "#FFFFFF",
+    ctaBackgroundColor: "#4285F4"
+  };
 
-function MediumTemplate({ styles, highlightZone, visibility, mediaUrl, iconUrl }) {
-  const showIcon = visibility.advertiserIcon;
-  const showSecondary = visibility.advertiserName;
-  const showTertiary = visibility.body;
-  return (
-    <div style={{ width: 320, backgroundColor: styles.mainBackgroundColor, borderRadius: 8, overflow: "hidden",
-      border: "1px solid #e0e0e0", boxShadow: "0 2px 12px rgba(0,0,0,0.08)",
-      outline: highlightZone === "main" ? "3px solid #FF6B35" : "none" }}>
-      {mediaUrl ? (
-        <img src={mediaUrl} style={{ width: "100%", height: 180, objectFit: "cover", display: "block" }} />
-      ) : (
-        <MediaPlaceholder width="100%" height={180} label={"▶ Media / Image\n320 × 180"} />
-      )}
-      <div style={{ padding: 12 }}>
-        <div style={{ display: "flex", gap: 10, marginBottom: 8 }}>
-          {showIcon && (
-            iconUrl ? (
-              <img src={iconUrl} style={{ width: 40, height: 40, borderRadius: 20, objectFit: "cover", flexShrink: 0 }} />
-            ) : (
-              <div style={{ width: 40, height: 40, borderRadius: 20, background: "#e0e0e0", flexShrink: 0,
-                display: "flex", alignItems: "center", justifyContent: "center", fontSize: 8, color: "#999", fontFamily: "system-ui", position: "relative" }}>
-                icon
-                <div style={{ position: "absolute", top: -4, right: -4, background: "rgba(0,0,0,0.5)", color: "#fff", fontSize: 7, padding: "1px 3px", borderRadius: 2, fontFamily: "system-ui" }}>🔒</div>
-              </div>
-            )
-          )}
-          <div style={{ flex: 1, minWidth: 0 }}>
-            <div style={{ fontFamily: styles.primaryTextTypeface, fontSize: styles.primaryTextSize,
-              color: styles.primaryTextTypefaceColor, backgroundColor: styles.primaryTextBackgroundColor,
-              fontWeight: 600, lineHeight: 1.3, outline: highlightZone === "primary" ? "2px solid #FF6B35" : "none",
-              outlineOffset: 2, borderRadius: 2, overflow: "hidden", textOverflow: "ellipsis",
-              display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical" }}>
-              {styles.primaryTextContent}
-            </div>
-            {showSecondary && (
-              <div style={{ fontFamily: styles.secondaryTextTypeface, fontSize: styles.secondaryTextSize,
-                color: styles.secondaryTextTypefaceColor, backgroundColor: styles.secondaryTextBackgroundColor,
-                marginTop: 2, outline: highlightZone === "secondary" ? "2px solid #FF6B35" : "none", outlineOffset: 2, borderRadius: 2 }}>
-                {styles.secondaryTextContent}
-              </div>
-            )}
-          </div>
-        </div>
-        {showTertiary && (
-          <div style={{ fontFamily: styles.tertiaryTextTypeface, fontSize: styles.tertiaryTextSize,
-            color: styles.tertiaryTextTypefaceColor, backgroundColor: styles.tertiaryTextBackgroundColor,
-            lineHeight: 1.5, marginBottom: 10, outline: highlightZone === "tertiary" ? "2px solid #FF6B35" : "none",
-            outlineOffset: 2, borderRadius: 2, overflow: "hidden", textOverflow: "ellipsis",
-            display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical" }}>
-            {styles.tertiaryTextContent}
-          </div>
-        )}
-        <div style={{ fontFamily: styles.ctaTextTypeface, fontSize: styles.ctaTextSize, color: styles.ctaTypefaceColor,
-          backgroundColor: styles.ctaBackgroundColor, padding: "8px 16px", borderRadius: 4, textAlign: "center",
-          fontWeight: 500, outline: highlightZone === "cta" ? "2px solid #FF6B35" : "none", outlineOffset: 2, marginTop: showTertiary ? 0 : 10 }}>
-          {styles.ctaText}
-        </div>
-      </div>
-      <div style={{ padding: "0 12px 8px", display: "flex", alignItems: "center", gap: 4 }}>
-        <span style={{ fontSize: 9, color: "#999", background: "#f0f0f0", padding: "1px 4px", borderRadius: 2, fontFamily: "system-ui" }}>Ad</span>
-        <span style={{ fontSize: 9, color: "#bbb", fontFamily: "system-ui" }}>AdChoices ▸ 🔒</span>
-      </div>
-    </div>
-  );
-}
+  var TEXT_LIMITS = {
+    primaryTextContent:   { suggest: 25, max: 90 },
+    tertiaryTextContent:  { suggest: 90, max: 150 },
+    secondaryTextContent: { suggest: 25, max: 25 },
+    ctaText:              { suggest: 15, max: 15 }
+  };
 
-function SmallTemplate({ styles, highlightZone, visibility, mediaUrl, iconUrl }) {
-  const showIcon = visibility.advertiserIcon;
-  const showSecondary = visibility.advertiserName;
-  const showTertiary = visibility.body;
-  return (
-    <div style={{ width: 320, backgroundColor: styles.mainBackgroundColor, borderRadius: 8, overflow: "hidden",
-      border: "1px solid #e0e0e0", boxShadow: "0 2px 12px rgba(0,0,0,0.08)", display: "flex",
-      outline: highlightZone === "main" ? "3px solid #FF6B35" : "none" }}>
-      {showIcon && (
-        iconUrl ? (
-          <img src={iconUrl} style={{ width: 85, objectFit: "cover", flexShrink: 0 }} />
-        ) : (
-          <MediaPlaceholder width={85} height="auto" label={"icon /\nmedia"} />
-        )
-      )}
-      <div style={{ flex: 1, padding: 10, display: "flex", flexDirection: "column", justifyContent: "center", gap: 4, minWidth: 0 }}>
-        <div style={{ fontFamily: styles.primaryTextTypeface, fontSize: Math.min(styles.primaryTextSize, 15),
-          color: styles.primaryTextTypefaceColor, backgroundColor: styles.primaryTextBackgroundColor,
-          fontWeight: 600, lineHeight: 1.3, outline: highlightZone === "primary" ? "2px solid #FF6B35" : "none",
-          outlineOffset: 1, borderRadius: 2, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
-          {styles.primaryTextContent}
-        </div>
-        {showSecondary && (
-          <div style={{ fontFamily: styles.secondaryTextTypeface, fontSize: Math.min(styles.secondaryTextSize, 12),
-            color: styles.secondaryTextTypefaceColor, backgroundColor: styles.secondaryTextBackgroundColor,
-            outline: highlightZone === "secondary" ? "2px solid #FF6B35" : "none", outlineOffset: 1, borderRadius: 2,
-            whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
-            {styles.secondaryTextContent}
-          </div>
-        )}
-        {showTertiary && (
-          <div style={{ fontFamily: styles.tertiaryTextTypeface, fontSize: Math.min(styles.tertiaryTextSize, 11),
-            color: styles.tertiaryTextTypefaceColor, backgroundColor: styles.tertiaryTextBackgroundColor,
-            outline: highlightZone === "tertiary" ? "2px solid #FF6B35" : "none", outlineOffset: 1, borderRadius: 2,
-            whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
-            {styles.tertiaryTextContent}
-          </div>
-        )}
-        <div style={{ fontFamily: styles.ctaTextTypeface, fontSize: Math.min(styles.ctaTextSize, 12),
-          color: styles.ctaTypefaceColor, backgroundColor: styles.ctaBackgroundColor, padding: "4px 10px",
-          borderRadius: 4, textAlign: "center", fontWeight: 500,
-          outline: highlightZone === "cta" ? "2px solid #FF6B35" : "none", outlineOffset: 1, alignSelf: "flex-start" }}>
-          {styles.ctaText}
-        </div>
-      </div>
-    </div>
-  );
-}
+  var FONT_OPTIONS = ["Noto Sans TC", "Roboto", "Arial", "Helvetica", "Georgia", "Courier New", "system-ui"];
+  var OPTIONAL_FIELDS = [
+    { key: "body", label: "描述文字 (Body)" },
+    { key: "advertiserName", label: "廣告主名稱" },
+    { key: "advertiserIcon", label: "廣告主 Icon" }
+  ];
+  var PARAM_GROUPS = [
+    { key: "main", label: "整體背景", icon: "◻", params: [{ key: "mainBackgroundColor", label: "背景色", type: "color" }] },
+    { key: "primary", label: "標題 (Primary Text)", icon: "H1", params: [
+      { key: "primaryTextContent", label: "預覽文字", type: "text" },
+      { key: "primaryTextTypeface", label: "字體", type: "font" },
+      { key: "primaryTextSize", label: "字級", type: "number", min: 10, max: 32 },
+      { key: "primaryTextTypefaceColor", label: "文字色", type: "color" },
+      { key: "primaryTextBackgroundColor", label: "背景色", type: "color" }
+    ]},
+    { key: "secondary", label: "廣告主名稱 (Secondary)", icon: "H2", optionalFieldKey: "advertiserName", params: [
+      { key: "secondaryTextContent", label: "預覽文字", type: "text" },
+      { key: "secondaryTextTypeface", label: "字體", type: "font" },
+      { key: "secondaryTextSize", label: "字級", type: "number", min: 8, max: 24 },
+      { key: "secondaryTextTypefaceColor", label: "文字色", type: "color" },
+      { key: "secondaryTextBackgroundColor", label: "背景色", type: "color" }
+    ]},
+    { key: "tertiary", label: "描述文字 (Tertiary)", icon: "¶", optionalFieldKey: "body", params: [
+      { key: "tertiaryTextContent", label: "預覽文字", type: "text" },
+      { key: "tertiaryTextTypeface", label: "字體", type: "font" },
+      { key: "tertiaryTextSize", label: "字級", type: "number", min: 8, max: 24 },
+      { key: "tertiaryTextTypefaceColor", label: "文字色", type: "color" },
+      { key: "tertiaryTextBackgroundColor", label: "背景色", type: "color" }
+    ]},
+    { key: "cta", label: "CTA 按鈕", icon: "▶", params: [
+      { key: "ctaText", label: "按鈕文字", type: "text" },
+      { key: "ctaTextTypeface", label: "字體", type: "font" },
+      { key: "ctaTextSize", label: "字級", type: "number", min: 10, max: 24 },
+      { key: "ctaTypefaceColor", label: "文字色", type: "color" },
+      { key: "ctaBackgroundColor", label: "背景色", type: "color" }
+    ]}
+  ];
 
-function App() {
-  const [template, setTemplate] = useState("medium");
-  const [styles, setStyles] = useState({ ...DEFAULT_STYLES });
-  const [highlightZone, setHighlightZone] = useState(null);
-  const [expandedGroup, setExpandedGroup] = useState("primary");
-  const [exportMsg, setExportMsg] = useState(null);
-  const [visibility, setVisibility] = useState({ body: true, advertiserName: true, advertiserIcon: true });
-  const [mediaUrl, setMediaUrl] = useState(null);
-  const [iconUrl, setIconUrl] = useState(null);
-  const [jsonCopied, setJsonCopied] = useState(false);
-  const previewRef = useRef(null);
+  var DOC_LINKS = [
+    { l: "📄 Template (Android)", u: "https://developers.google.com/ad-manager/mobile-ads-sdk/android/native/templates" },
+    { l: "📄 Template (iOS)", u: "https://developers.google.com/ad-manager/mobile-ads-sdk/ios/native/templates" },
+    { l: "📄 Custom Rendering", u: "https://developers.google.com/ad-manager/mobile-ads-sdk/android/native/advanced" },
+    { l: "📄 Native + Banner", u: "https://developers.google.com/ad-manager/mobile-ads-sdk/android/native-banner" }
+  ];
 
-  const updateStyle = useCallback((key, value) => { setStyles(p => ({ ...p, [key]: value })); }, []);
-  const resetAll = useCallback(() => {
-    setStyles({ ...DEFAULT_STYLES });
-    setVisibility({ body: true, advertiserName: true, advertiserIcon: true });
-    if (mediaUrl) URL.revokeObjectURL(mediaUrl);
-    if (iconUrl) URL.revokeObjectURL(iconUrl);
-    setMediaUrl(null); setIconUrl(null); setExportMsg(null); setJsonCopied(false);
-  }, [mediaUrl, iconUrl]);
-  const toggleVis = useCallback((k) => { setVisibility(p => ({ ...p, [k]: !p[k] })); }, []);
+  /* ── State ── */
+  var state = {
+    template: "medium",
+    styles: Object.assign({}, DEFAULT_STYLES),
+    highlightZone: null,
+    expandedGroup: "primary",
+    visibility: { body: true, advertiserName: true, advertiserIcon: true },
+    mediaUrl: null,
+    iconUrl: null,
+    jsonCopied: false,
+    exportMsg: null,
+    collapsible: {} // track open/close of info sections
+  };
 
-  const exportJSON = useCallback(() => {
-    const d = {
-      template, optionalFieldsVisible: { ...visibility },
+  /* ── Helpers ── */
+  function esc(s) { var d = document.createElement("div"); d.textContent = s; return d.innerHTML; }
+  function clamp(v, lo, hi) { return Math.max(lo, Math.min(hi, v)); }
+
+  /* ── Render ── */
+  function render() {
+    var s = state.styles;
+    var v = state.visibility;
+    var hz = state.highlightZone;
+    var t = state.template;
+    var hasHidden = !v.body || !v.advertiserName || !v.advertiserIcon;
+
+    var html = '';
+
+    /* Header */
+    html += '<div style="padding:20px;border-bottom:1px solid #e0e0e0;background:rgba(255,255,255,0.95)">';
+    html += '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px">';
+    html += '<div style="font-size:17px;font-weight:700">Google Native Ad Template 樣式調整器</div>';
+    html += '<a href="index.html" style="font-size:12px;color:#2962FF;text-decoration:none;padding:4px 10px;background:#EEF2FF;border-radius:4px;border:1px solid #dce3f0;white-space:nowrap">← 工具目錄</a>';
+    html += '</div>';
+    html += '<div style="font-size:12px;color:#555;line-height:1.7;margin-bottom:14px">';
+    html += 'App 廣告版位在 <strong>App Render（Native）</strong> 模式下，GAM 回傳結構化資料，由 App 自行組裝畫面。<br/>';
+    html += '本工具基於 Google 官方 Native Template，讓設計師即時調整樣式、預覽效果、匯出 PNG 貼到 Figma 確認。';
+    html += '</div>';
+
+    /* Collapsible: 可調整 vs 不可調整 */
+    var c1Open = state.collapsible["info1"];
+    html += '<div class="collapsible"><button class="collapsible-btn" data-collapsible="info1">';
+    html += '<span class="title">可調整 vs 不可調整</span>';
+    html += '<span class="arrow' + (c1Open ? ' open' : '') + '">▶</span></button>';
+    html += '<div class="collapsible-body' + (c1Open ? ' open' : '') + '">';
+    html += '<div style="display:flex;gap:20px;flex-wrap:wrap">';
+    html += '<div style="flex:1;min-width:140px">';
+    html += '<div style="display:flex;align-items:center;gap:5px;margin-bottom:6px">';
+    html += '<div style="width:12px;height:12px;border:2px solid #FF6B35;border-radius:2px"></div>';
+    html += '<span style="font-size:11px;font-weight:600;color:#FF6B35">可調整（樣式）</span></div>';
+    html += '<ul style="margin:0;padding-left:18px;font-size:11px;color:#555;line-height:1.8"><li>整體背景色</li><li>標題 — 字體、字級、字色、背景色</li><li>廣告主名稱 — 同上</li><li>描述文字 — 同上</li><li>CTA 按鈕 — 同上</li></ul></div>';
+    html += '<div style="flex:1;min-width:140px">';
+    html += '<div style="display:flex;align-items:center;gap:5px;margin-bottom:6px">';
+    html += '<div style="width:12px;height:12px;background:#e0e0e0;border-radius:2px;display:flex;align-items:center;justify-content:center;font-size:6px">🔒</div>';
+    html += '<span style="font-size:11px;font-weight:600;color:#999">不可調整（結構）</span></div>';
+    html += '<ul style="margin:0;padding-left:18px;font-size:11px;color:#999;line-height:1.8"><li>Media / Image 區域</li><li>Icon 位置</li><li>AdChoices 標記</li><li>元素排列順序</li></ul></div></div>';
+    html += '<div style="margin-top:10px;padding:8px 10px;background:#FFF8E1;border-radius:4px;font-size:11px;color:#8D6E00;line-height:1.6">';
+    html += '⚠ 若需更改結構或排列，需走 Custom Rendering（非 Template）路線，開發成本較高。</div>';
+    html += '</div></div>';
+
+    /* Collapsible: GAM 回傳欄位說明 */
+    var c2Open = state.collapsible["info2"];
+    html += '<div class="collapsible"><button class="collapsible-btn" data-collapsible="info2">';
+    html += '<span class="title">GAM 回傳欄位說明</span>';
+    html += '<span class="arrow' + (c2Open ? ' open' : '') + '">▶</span></button>';
+    html += '<div class="collapsible-body' + (c2Open ? ' open' : '') + '">';
+    html += '<div style="font-size:11px;color:#444;line-height:1.7">';
+    html += '<strong>必填欄位</strong>（一定會有）：標題 (Headline)、主圖 (Image)、CTA 按鈕<br/>';
+    html += '<strong>選填欄位</strong>（可能為空）：描述文字 (Body)、廣告主名稱 / Icon、Star rating<br/>';
+    html += '<span style="color:#888">→ 設計稿以全部欄位都有的狀態設計，另需標注「欄位為空時的處理方式」</span><br/>';
+    html += '<span style="color:#888">→ 下方「欄位模擬」可切換選填欄位，預覽各種缺失狀態</span><br/><br/>';
+    html += '<strong>各欄位文字長度限制</strong>（由 GAM 投放端控制，App 端不需驗證）：<br/>';
+    html += '標題 建議25字/上限90字、描述文字 建議90字/上限150字、廣告主名稱 上限25字、CTA按鈕 上限15字</div>';
+    html += '</div></div></div>';
+
+    /* Template selector */
+    html += '<div style="display:flex;gap:8px;padding:12px 20px;border-bottom:1px solid #eee">';
+    ["medium", "small"].forEach(function(k) {
+      var active = t === k;
+      html += '<button class="tmpl-btn' + (active ? ' active' : '') + '" data-template="' + k + '">';
+      html += '<div class="name">' + TEMPLATES[k].label + '</div>';
+      html += '<div class="desc">' + esc(TEMPLATES[k].description) + '</div></button>';
+    });
+    html += '</div>';
+
+    /* Image uploads */
+    html += '<div style="padding:10px 20px;border-bottom:1px solid #eee">';
+    html += '<div style="font-size:11px;font-weight:600;color:#555;margin-bottom:6px">素材上傳（模擬真實廣告畫面）</div>';
+    html += renderImageUpload("media", "主圖 Media", "不限尺寸，建議 1.91:1 或 1:1，≥1200px寬", state.mediaUrl, "wide", "image/jpeg,image/png,image/gif,image/webp");
+    html += renderImageUpload("icon", "Icon 圖示", "不限尺寸，建議 1:1 正方形，≥128px", state.iconUrl, "square", "image/jpeg,image/png");
+    html += '</div>';
+
+    /* Field toggles */
+    html += '<div style="padding:12px 20px;border-bottom:1px solid #eee">';
+    html += '<div style="font-size:11px;font-weight:600;color:#555;margin-bottom:8px;display:flex;align-items:center;gap:6px">';
+    html += '<span>欄位模擬</span>';
+    html += '<span style="font-size:9px;color:#888;font-weight:400;background:#f5f5f5;padding:2px 6px;border-radius:3px">切換選填欄位，模擬 GAM 未提供該資料時的畫面</span></div>';
+    html += '<div style="display:flex;gap:6px;flex-wrap:wrap">';
+    html += '<button class="chip active required"><span style="font-size:13px">☑</span>標題<span class="badge">必填</span></button>';
+    html += '<button class="chip active required"><span style="font-size:13px">☑</span>主圖<span class="badge">必填</span></button>';
+    html += '<button class="chip active required"><span style="font-size:13px">☑</span>CTA<span class="badge">必填</span></button>';
+    OPTIONAL_FIELDS.forEach(function(f) {
+      var a = v[f.key];
+      html += '<button class="chip' + (a ? ' active' : '') + '" data-toggle="' + f.key + '">';
+      html += '<span style="font-size:13px">' + (a ? '☑' : '☐') + '</span>' + esc(f.label) + '</button>';
+    });
+    html += '</div></div>';
+
+    /* Desktop two-column wrapper */
+    html += '<div class="desktop-two-col">';
+
+    /* Left column: Preview + Export */
+    html += '<div class="col-preview">';
+    html += '<div class="preview-area" style="min-height:' + (t === "medium" ? 340 : 140) + 'px">';
+    html += '<div class="preview-label"><span>即時預覽 — ' + TEMPLATES[t].label + '</span>';
+    if (hasHidden) html += '<span class="hidden-badge">缺失欄位模擬中</span>';
+    html += '</div>';
+    html += '<div id="preview-wrap">';
+    html += (t === "medium") ? renderMedium() : renderSmall();
+    html += '</div></div>';
+
+    /* Export buttons */
+    html += '<div class="export-bar">';
+    html += '<button class="btn-png" id="btn-export-png">⬇ 下載 PNG</button>';
+    html += '<button class="btn-json' + (state.jsonCopied ? ' copied' : '') + '" id="btn-export-json">' + (state.jsonCopied ? '✓ 已複製' : '📋 複製 JSON') + '</button>';
+    html += '<button class="btn-reset" id="btn-reset">↺ 重置</button></div>';
+    html += '<div class="export-msg" id="export-msg"' + (state.exportMsg ? ' style="display:block"' : '') + '>' + (state.exportMsg || '') + '</div>';
+    html += '</div>'; /* end col-preview */
+
+    /* Right column: Param groups */
+    html += '<div class="col-params">';
+    html += '<div><div class="param-header">參數調整（hover 群組可高亮預覽區域）</div>';
+    PARAM_GROUPS.forEach(function(g) {
+      var isExp = state.expandedGroup === g.key;
+      var isHid = g.optionalFieldKey && !v[g.optionalFieldKey];
+      html += '<div class="param-group' + (isHid ? ' hidden-field' : '') + '" data-group="' + g.key + '"' + (g.optionalFieldKey ? ' data-opt="' + g.optionalFieldKey + '"' : '') + '>';
+      html += '<button class="param-group-btn' + (isExp && !isHid ? ' expanded' : '') + '" data-expand="' + g.key + '">';
+      html += '<span class="param-icon' + (hz === g.key && !isHid ? ' highlight' : '') + '">' + esc(g.icon) + '</span>';
+      html += '<span class="param-group-label">' + esc(g.label);
+      if (isHid) html += '<span class="hid-tag">(已隱藏)</span>';
+      html += '</span>';
+      html += '<span class="param-arrow' + (isExp && !isHid ? ' open' : '') + '">▶</span></button>';
+      if (isExp && !isHid) {
+        html += '<div class="param-body open">';
+        g.params.forEach(function(p) {
+          html += '<div class="param-row">';
+          html += '<label>' + esc(p.label) + '</label>';
+          if (p.type === "color") {
+            var cv = s[p.key];
+            var isT = cv === "transparent";
+            html += '<div class="color-input">';
+            html += '<input type="color" value="' + (isT ? '#ffffff' : esc(cv)) + '" data-style="' + p.key + '" data-input="color-picker"';
+            if (isT) html += ' style="background:repeating-conic-gradient(#ccc 0% 25%,white 0% 50%) 50%/12px 12px"';
+            html += '>';
+            html += '<input type="text" value="' + esc(cv) + '" data-style="' + p.key + '" data-input="color-text"></div>';
+          } else if (p.type === "font") {
+            html += '<select data-style="' + p.key + '">';
+            FONT_OPTIONS.forEach(function(f) {
+              html += '<option value="' + esc(f) + '"' + (s[p.key] === f ? ' selected' : '') + '>' + esc(f) + '</option>';
+            });
+            html += '</select>';
+          } else if (p.type === "number") {
+            html += '<div class="range-wrap">';
+            html += '<input type="range" min="' + p.min + '" max="' + p.max + '" value="' + s[p.key] + '" data-style="' + p.key + '" data-input="range">';
+            html += '<span>' + s[p.key] + '</span></div>';
+          } else if (p.type === "text") {
+            var lim = TEXT_LIMITS[p.key];
+            if (lim) {
+              var len = s[p.key].length;
+              var counterColor = len > lim.max ? '#e53935' : len > lim.suggest ? '#EF6C00' : '#999';
+              html += '<div class="text-with-counter">';
+              html += '<input type="text" value="' + esc(s[p.key]) + '" data-style="' + p.key + '" data-input="text-field">';
+              html += '<span class="char-counter" style="color:' + counterColor + '">' + len + '/' + lim.suggest + '</span></div>';
+            } else {
+              html += '<input type="text" value="' + esc(s[p.key]) + '" data-style="' + p.key + '" data-input="text-field">';
+            }
+          }
+          html += '</div>';
+        });
+        html += '</div>';
+      }
+      html += '</div>';
+    });
+    html += '</div>';
+    html += '</div>'; /* end col-params */
+    html += '</div>'; /* end desktop-two-col */
+
+    /* Doc links */
+    html += '<div class="doc-links"><div class="heading">官方參考文件</div><div class="links">';
+    DOC_LINKS.forEach(function(d) {
+      html += '<a href="' + d.u + '" target="_blank" rel="noopener noreferrer">' + esc(d.l) + '</a>';
+    });
+    html += '</div></div>';
+
+    document.getElementById("root").innerHTML = html;
+    bindEvents();
+  }
+
+  function renderImageUpload(id, label, hint, url, aspect, accept) {
+    var h = '<div class="img-upload"><div class="label-col"><div class="main">' + esc(label) + '</div><div class="hint">' + esc(hint) + '</div></div>';
+    if (url) {
+      var w = aspect === "square" ? 36 : 64;
+      h += '<div style="display:flex;align-items:center;gap:6px">';
+      h += '<img class="thumb" src="' + url + '" style="width:' + w + 'px">';
+      h += '<button class="remove-btn" data-img-clear="' + id + '">移除</button>';
+      h += '<button class="replace-btn" data-img-replace="' + id + '">替換</button></div>';
+    } else {
+      h += '<button class="upload-btn" data-img-upload="' + id + '">上傳圖片</button>';
+    }
+    h += '<input type="file" accept="' + accept + '" data-img-input="' + id + '" style="display:none">';
+    h += '</div>';
+    return h;
+  }
+
+  /* ── Preview renderers ── */
+  function outlineStyle(zone) {
+    return state.highlightZone === zone ? "2px solid #FF6B35" : "none";
+  }
+  function outline3Style(zone) {
+    return state.highlightZone === zone ? "3px solid #FF6B35" : "none";
+  }
+
+  function renderMedium() {
+    var s = state.styles, v = state.visibility;
+    var showIcon = v.advertiserIcon, showSec = v.advertiserName, showTer = v.body;
+    var h = '<div class="ad-card" style="width:320px;background-color:' + esc(s.mainBackgroundColor) + ';outline:' + outline3Style("main") + '">';
+
+    // Media
+    if (state.mediaUrl) {
+      h += '<img src="' + state.mediaUrl + '" style="width:100%;height:180px;object-fit:cover;display:block">';
+    } else {
+      h += '<div class="media-placeholder" style="width:100%;height:180px"><div class="ph-text">▶ Media / Image\n320 × 180</div><div class="lock-badge">🔒 不可調整</div></div>';
+    }
+
+    h += '<div style="padding:12px">';
+    h += '<div style="display:flex;gap:10px;margin-bottom:8px">';
+    // Icon
+    if (showIcon) {
+      if (state.iconUrl) {
+        h += '<img src="' + state.iconUrl + '" style="width:40px;height:40px;border-radius:20px;object-fit:cover;flex-shrink:0">';
+      } else {
+        h += '<div style="width:40px;height:40px;border-radius:20px;background:#e0e0e0;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:8px;color:#999;font-family:system-ui;position:relative">icon';
+        h += '<div style="position:absolute;top:-4px;right:-4px;background:rgba(0,0,0,0.5);color:#fff;font-size:7px;padding:1px 3px;border-radius:2px;font-family:system-ui">🔒</div></div>';
+      }
+    }
+    h += '<div style="flex:1;min-width:0">';
+    // Primary
+    h += '<div style="font-family:' + esc(s.primaryTextTypeface) + ';font-size:' + s.primaryTextSize + 'px;color:' + esc(s.primaryTextTypefaceColor) + ';background-color:' + esc(s.primaryTextBackgroundColor) + ';font-weight:600;line-height:1.3;outline:' + outlineStyle("primary") + ';outline-offset:2px;border-radius:2px;overflow:hidden;text-overflow:ellipsis;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical">' + esc(s.primaryTextContent) + '</div>';
+    // Secondary
+    if (showSec) {
+      h += '<div style="font-family:' + esc(s.secondaryTextTypeface) + ';font-size:' + s.secondaryTextSize + 'px;color:' + esc(s.secondaryTextTypefaceColor) + ';background-color:' + esc(s.secondaryTextBackgroundColor) + ';margin-top:2px;outline:' + outlineStyle("secondary") + ';outline-offset:2px;border-radius:2px">' + esc(s.secondaryTextContent) + '</div>';
+    }
+    h += '</div></div>';
+    // Tertiary
+    if (showTer) {
+      h += '<div style="font-family:' + esc(s.tertiaryTextTypeface) + ';font-size:' + s.tertiaryTextSize + 'px;color:' + esc(s.tertiaryTextTypefaceColor) + ';background-color:' + esc(s.tertiaryTextBackgroundColor) + ';line-height:1.5;margin-bottom:10px;outline:' + outlineStyle("tertiary") + ';outline-offset:2px;border-radius:2px;overflow:hidden;text-overflow:ellipsis;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical">' + esc(s.tertiaryTextContent) + '</div>';
+    }
+    // CTA
+    h += '<div style="font-family:' + esc(s.ctaTextTypeface) + ';font-size:' + s.ctaTextSize + 'px;color:' + esc(s.ctaTypefaceColor) + ';background-color:' + esc(s.ctaBackgroundColor) + ';padding:8px 16px;border-radius:4px;text-align:center;font-weight:500;outline:' + outlineStyle("cta") + ';outline-offset:2px;margin-top:' + (showTer ? '0' : '10px') + '">' + esc(s.ctaText) + '</div>';
+    h += '</div>';
+    // Ad badge
+    h += '<div style="padding:0 12px 8px;display:flex;align-items:center;gap:4px">';
+    h += '<span style="font-size:9px;color:#999;background:#f0f0f0;padding:1px 4px;border-radius:2px;font-family:system-ui">Ad</span>';
+    h += '<span style="font-size:9px;color:#bbb;font-family:system-ui">AdChoices ▸ 🔒</span></div>';
+    h += '</div>';
+    return h;
+  }
+
+  function renderSmall() {
+    var s = state.styles, v = state.visibility;
+    var showIcon = v.advertiserIcon, showSec = v.advertiserName, showTer = v.body;
+    var h = '<div class="ad-card" style="width:320px;background-color:' + esc(s.mainBackgroundColor) + ';display:flex;outline:' + outline3Style("main") + '">';
+
+    // Icon / media
+    if (showIcon) {
+      if (state.iconUrl) {
+        h += '<img src="' + state.iconUrl + '" style="width:85px;object-fit:cover;flex-shrink:0">';
+      } else {
+        h += '<div class="media-placeholder" style="width:85px"><div class="ph-text">icon /\nmedia</div><div class="lock-badge">🔒 不可調整</div></div>';
+      }
+    }
+
+    h += '<div style="flex:1;padding:10px;display:flex;flex-direction:column;justify-content:center;gap:4px;min-width:0">';
+    // Primary
+    var ps = Math.min(s.primaryTextSize, 15);
+    h += '<div style="font-family:' + esc(s.primaryTextTypeface) + ';font-size:' + ps + 'px;color:' + esc(s.primaryTextTypefaceColor) + ';background-color:' + esc(s.primaryTextBackgroundColor) + ';font-weight:600;line-height:1.3;outline:' + outlineStyle("primary") + ';outline-offset:1px;border-radius:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">' + esc(s.primaryTextContent) + '</div>';
+    // Secondary
+    if (showSec) {
+      var ss = Math.min(s.secondaryTextSize, 12);
+      h += '<div style="font-family:' + esc(s.secondaryTextTypeface) + ';font-size:' + ss + 'px;color:' + esc(s.secondaryTextTypefaceColor) + ';background-color:' + esc(s.secondaryTextBackgroundColor) + ';outline:' + outlineStyle("secondary") + ';outline-offset:1px;border-radius:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">' + esc(s.secondaryTextContent) + '</div>';
+    }
+    // Tertiary
+    if (showTer) {
+      var ts = Math.min(s.tertiaryTextSize, 11);
+      h += '<div style="font-family:' + esc(s.tertiaryTextTypeface) + ';font-size:' + ts + 'px;color:' + esc(s.tertiaryTextTypefaceColor) + ';background-color:' + esc(s.tertiaryTextBackgroundColor) + ';outline:' + outlineStyle("tertiary") + ';outline-offset:1px;border-radius:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">' + esc(s.tertiaryTextContent) + '</div>';
+    }
+    // CTA
+    var cs = Math.min(s.ctaTextSize, 12);
+    h += '<div style="font-family:' + esc(s.ctaTextTypeface) + ';font-size:' + cs + 'px;color:' + esc(s.ctaTypefaceColor) + ';background-color:' + esc(s.ctaBackgroundColor) + ';padding:4px 10px;border-radius:4px;text-align:center;font-weight:500;outline:' + outlineStyle("cta") + ';outline-offset:1px;align-self:flex-start">' + esc(s.ctaText) + '</div>';
+    h += '</div></div>';
+    return h;
+  }
+
+  /* ── Event binding ── */
+  function bindEvents() {
+    var root = document.getElementById("root");
+
+    // Collapsible sections
+    root.querySelectorAll("[data-collapsible]").forEach(function(btn) {
+      btn.addEventListener("click", function() {
+        var key = btn.getAttribute("data-collapsible");
+        state.collapsible[key] = !state.collapsible[key];
+        render();
+      });
+    });
+
+    // Template selector
+    root.querySelectorAll("[data-template]").forEach(function(btn) {
+      btn.addEventListener("click", function() {
+        state.template = btn.getAttribute("data-template");
+        render();
+      });
+    });
+
+    // Toggle chips
+    root.querySelectorAll("[data-toggle]").forEach(function(btn) {
+      btn.addEventListener("click", function() {
+        var k = btn.getAttribute("data-toggle");
+        state.visibility[k] = !state.visibility[k];
+        render();
+      });
+    });
+
+    // Image uploads
+    root.querySelectorAll("[data-img-upload]").forEach(function(btn) {
+      btn.addEventListener("click", function() {
+        var id = btn.getAttribute("data-img-upload");
+        root.querySelector('[data-img-input="' + id + '"]').click();
+      });
+    });
+    root.querySelectorAll("[data-img-replace]").forEach(function(btn) {
+      btn.addEventListener("click", function() {
+        var id = btn.getAttribute("data-img-replace");
+        root.querySelector('[data-img-input="' + id + '"]').click();
+      });
+    });
+    root.querySelectorAll("[data-img-clear]").forEach(function(btn) {
+      btn.addEventListener("click", function() {
+        var id = btn.getAttribute("data-img-clear");
+        if (id === "media") { if (state.mediaUrl) URL.revokeObjectURL(state.mediaUrl); state.mediaUrl = null; }
+        else { if (state.iconUrl) URL.revokeObjectURL(state.iconUrl); state.iconUrl = null; }
+        render();
+      });
+    });
+    root.querySelectorAll("[data-img-input]").forEach(function(inp) {
+      inp.addEventListener("change", function(e) {
+        var f = e.target.files && e.target.files[0];
+        if (!f) return;
+        var id = inp.getAttribute("data-img-input");
+        var reader = new FileReader();
+        reader.onload = function(ev) {
+          if (id === "media") { state.mediaUrl = ev.target.result; }
+          else { state.iconUrl = ev.target.result; }
+          render();
+        };
+        reader.readAsDataURL(f);
+        e.target.value = "";
+      });
+    });
+
+    // Param group expand
+    root.querySelectorAll("[data-expand]").forEach(function(btn) {
+      btn.addEventListener("click", function() {
+        var key = btn.getAttribute("data-expand");
+        var grp = btn.closest(".param-group");
+        if (grp && grp.classList.contains("hidden-field")) return;
+        state.expandedGroup = state.expandedGroup === key ? null : key;
+        render();
+      });
+    });
+
+    // Param group hover
+    root.querySelectorAll(".param-group").forEach(function(el) {
+      el.addEventListener("mouseenter", function() {
+        if (el.classList.contains("hidden-field")) return;
+        state.highlightZone = el.getAttribute("data-group");
+        updatePreview();
+        updateParamIcons();
+      });
+      el.addEventListener("mouseleave", function() {
+        state.highlightZone = null;
+        updatePreview();
+        updateParamIcons();
+      });
+    });
+
+    // Style inputs — color picker
+    root.querySelectorAll('[data-input="color-picker"]').forEach(function(inp) {
+      inp.addEventListener("input", function() {
+        var key = inp.getAttribute("data-style");
+        state.styles[key] = inp.value;
+        var textInp = root.querySelector('[data-input="color-text"][data-style="' + key + '"]');
+        if (textInp) textInp.value = inp.value;
+        updatePreview();
+      });
+    });
+    // Color text
+    root.querySelectorAll('[data-input="color-text"]').forEach(function(inp) {
+      inp.addEventListener("input", function() {
+        var key = inp.getAttribute("data-style");
+        state.styles[key] = inp.value;
+        var picker = root.querySelector('[data-input="color-picker"][data-style="' + key + '"]');
+        if (picker && inp.value.match(/^#[0-9a-fA-F]{6}$/)) picker.value = inp.value;
+        updatePreview();
+      });
+    });
+    // Font select
+    root.querySelectorAll("select[data-style]").forEach(function(sel) {
+      sel.addEventListener("change", function() {
+        state.styles[sel.getAttribute("data-style")] = sel.value;
+        updatePreview();
+      });
+    });
+    // Range slider
+    root.querySelectorAll('[data-input="range"]').forEach(function(inp) {
+      inp.addEventListener("input", function() {
+        var key = inp.getAttribute("data-style");
+        state.styles[key] = Number(inp.value);
+        var span = inp.parentNode.querySelector("span");
+        if (span) span.textContent = inp.value;
+        updatePreview();
+      });
+    });
+    // Text field
+    root.querySelectorAll('[data-input="text-field"]').forEach(function(inp) {
+      inp.addEventListener("input", function() {
+        state.styles[inp.getAttribute("data-style")] = inp.value;
+        updatePreview();
+      });
+    });
+
+    // Export PNG
+    var btnPng = document.getElementById("btn-export-png");
+    if (btnPng) btnPng.addEventListener("click", exportPNG);
+
+    // Export JSON
+    var btnJson = document.getElementById("btn-export-json");
+    if (btnJson) btnJson.addEventListener("click", exportJSON);
+
+    // Reset
+    var btnReset = document.getElementById("btn-reset");
+    if (btnReset) btnReset.addEventListener("click", resetAll);
+  }
+
+  /* ── Partial updates for performance ── */
+  function updatePreview() {
+    var wrap = document.getElementById("preview-wrap");
+    if (!wrap) return;
+    wrap.innerHTML = (state.template === "medium") ? renderMedium() : renderSmall();
+  }
+
+  function updateParamIcons() {
+    document.querySelectorAll(".param-icon").forEach(function(el) {
+      var grp = el.closest(".param-group");
+      if (!grp) return;
+      var key = grp.getAttribute("data-group");
+      var isHid = grp.classList.contains("hidden-field");
+      if (state.highlightZone === key && !isHid) {
+        el.classList.add("highlight");
+      } else {
+        el.classList.remove("highlight");
+      }
+    });
+  }
+
+  /* ── Actions ── */
+  function resetAll() {
+    if (state.mediaUrl) URL.revokeObjectURL(state.mediaUrl);
+    if (state.iconUrl) URL.revokeObjectURL(state.iconUrl);
+    state.styles = Object.assign({}, DEFAULT_STYLES);
+    state.visibility = { body: true, advertiserName: true, advertiserIcon: true };
+    state.mediaUrl = null;
+    state.iconUrl = null;
+    state.exportMsg = null;
+    state.jsonCopied = false;
+    render();
+  }
+
+  function exportJSON() {
+    var s = state.styles;
+    var d = {
+      template: state.template,
+      optionalFieldsVisible: Object.assign({}, state.visibility),
       nativeTemplateStyle: {
-        mainBackgroundColor: styles.mainBackgroundColor,
-        primaryText: { typeface: styles.primaryTextTypeface, size: styles.primaryTextSize, typefaceColor: styles.primaryTextTypefaceColor, backgroundColor: styles.primaryTextBackgroundColor },
-        secondaryText: { typeface: styles.secondaryTextTypeface, size: styles.secondaryTextSize, typefaceColor: styles.secondaryTextTypefaceColor, backgroundColor: styles.secondaryTextBackgroundColor },
-        tertiaryText: { typeface: styles.tertiaryTextTypeface, size: styles.tertiaryTextSize, typefaceColor: styles.tertiaryTextTypefaceColor, backgroundColor: styles.tertiaryTextBackgroundColor },
-        callToAction: { text: styles.ctaText, typeface: styles.ctaTextTypeface, size: styles.ctaTextSize, typefaceColor: styles.ctaTypefaceColor, backgroundColor: styles.ctaBackgroundColor },
-      },
+        mainBackgroundColor: s.mainBackgroundColor,
+        primaryText: { typeface: s.primaryTextTypeface, size: s.primaryTextSize, typefaceColor: s.primaryTextTypefaceColor, backgroundColor: s.primaryTextBackgroundColor },
+        secondaryText: { typeface: s.secondaryTextTypeface, size: s.secondaryTextSize, typefaceColor: s.secondaryTextTypefaceColor, backgroundColor: s.secondaryTextBackgroundColor },
+        tertiaryText: { typeface: s.tertiaryTextTypeface, size: s.tertiaryTextSize, typefaceColor: s.tertiaryTextTypefaceColor, backgroundColor: s.tertiaryTextBackgroundColor },
+        callToAction: { text: s.ctaText, typeface: s.ctaTextTypeface, size: s.ctaTextSize, typefaceColor: s.ctaTypefaceColor, backgroundColor: s.ctaBackgroundColor }
+      }
     };
-    const json = JSON.stringify(d, null, 2);
-    navigator.clipboard.writeText(json).then(() => {
-      setJsonCopied(true); setTimeout(() => setJsonCopied(false), 2000);
-    }).catch(() => {
-      const ta = document.createElement("textarea");
+    var json = JSON.stringify(d, null, 2);
+    var onSuccess = function() {
+      state.jsonCopied = true;
+      var btn = document.getElementById("btn-export-json");
+      if (btn) { btn.textContent = "✓ 已複製"; btn.classList.add("copied"); }
+      setTimeout(function() {
+        state.jsonCopied = false;
+        var btn2 = document.getElementById("btn-export-json");
+        if (btn2) { btn2.textContent = "📋 複製 JSON"; btn2.classList.remove("copied"); }
+      }, 2000);
+    };
+    navigator.clipboard.writeText(json).then(onSuccess).catch(function() {
+      var ta = document.createElement("textarea");
       ta.value = json; ta.style.position = "fixed"; ta.style.left = "-9999px";
       document.body.appendChild(ta); ta.select(); document.execCommand("copy");
       document.body.removeChild(ta);
-      setJsonCopied(true); setTimeout(() => setJsonCopied(false), 2000);
+      onSuccess();
     });
-  }, [styles, template, visibility]);
+  }
 
-  const exportPNG = useCallback(async () => {
-    const el = previewRef.current;
+  function showExportMsg(msg, duration) {
+    state.exportMsg = msg;
+    var el = document.getElementById("export-msg");
+    if (el) { el.textContent = msg; el.style.display = "block"; }
+    setTimeout(function() {
+      state.exportMsg = null;
+      var el2 = document.getElementById("export-msg");
+      if (el2) el2.style.display = "none";
+    }, duration || 3000);
+  }
+
+  function exportPNG() {
+    var el = document.getElementById("preview-wrap");
     if (!el) return;
-    try {
-      const canvas = document.createElement("canvas");
-      const s = 2, r = el.getBoundingClientRect();
-      canvas.width = r.width * s; canvas.height = r.height * s;
-      const ctx = canvas.getContext("2d"); ctx.scale(s, s);
-      ctx.fillStyle = "#ffffff"; ctx.fillRect(0, 0, canvas.width, canvas.height);
-      const clone = el.cloneNode(true);
-      const wrapper = document.createElement("div");
-      wrapper.style.position = "fixed"; wrapper.style.left = "-9999px"; wrapper.style.top = "0"; wrapper.style.width = r.width + "px";
-      document.body.appendChild(wrapper); wrapper.appendChild(clone);
-      const xmlns = "http://www.w3.org/1999/xhtml";
-      const html = new XMLSerializer().serializeToString(clone);
-      document.body.removeChild(wrapper);
-      const svgStr = '<svg xmlns="http://www.w3.org/2000/svg" width="'+r.width+'" height="'+r.height+'"><foreignObject width="100%" height="100%"><div xmlns="'+xmlns+'" style="font-family:Noto Sans TC,system-ui,sans-serif;">'+html+'</div></foreignObject></svg>';
-      const svgBlob = new Blob([svgStr], { type: "image/svg+xml;charset=utf-8" });
-      const url = URL.createObjectURL(svgBlob);
-      const img = new Image();
-      img.onload = () => {
-        ctx.drawImage(img, 0, 0); URL.revokeObjectURL(url);
-        const a = document.createElement("a"); a.href = canvas.toDataURL("image/png");
-        a.download = "native-ad-" + template + "-template.png"; a.click();
-        setExportMsg("✓ PNG 已下載，拖入 Figma 即可使用"); setTimeout(() => setExportMsg(null), 3000);
-      };
-      img.onerror = () => {
-        URL.revokeObjectURL(url);
-        const svgDl = document.createElement("a"); svgDl.href = URL.createObjectURL(svgBlob);
-        svgDl.download = "native-ad-" + template + "-template.svg"; svgDl.click();
-        setExportMsg("✓ SVG 已下載（PNG 轉換失敗，SVG 同樣可拖入 Figma）"); setTimeout(() => setExportMsg(null), 4000);
-      };
-      img.src = url;
-    } catch (e) { setExportMsg("⚠ 匯出失敗，請使用截圖工具"); setTimeout(() => setExportMsg(null), 3000); }
-  }, [template]);
+    html2canvas(el, { scale: 2, useCORS: true, backgroundColor: "#ffffff" }).then(function(canvas) {
+      var a = document.createElement("a");
+      a.href = canvas.toDataURL("image/png");
+      a.download = "native-ad-" + state.template + "-template.png";
+      a.click();
+      showExportMsg("✓ PNG 已下載，拖入 Figma 即可使用", 3000);
+    }).catch(function() {
+      showExportMsg("⚠ 匯出失敗，請使用截圖工具", 3000);
+    });
+  }
 
-  const Tmpl = template === "medium" ? MediumTemplate : SmallTemplate;
-  const hasHidden = !visibility.body || !visibility.advertiserName || !visibility.advertiserIcon;
-
-  return (
-    <div style={{ fontFamily: "'Noto Sans TC', system-ui, sans-serif", color: "#1a1a1a", maxWidth: 480, margin: "0 auto", minHeight: "100vh", background: "#fff" }}>
-
-      {/* Header */}
-      <div style={{ padding: "20px", borderBottom: "1px solid #e0e0e0", background: "rgba(255,255,255,0.95)" }}>
-        <div style={{ fontSize: 17, fontWeight: 700, marginBottom: 4 }}>Google Native Ad Template 樣式調整器</div>
-        <div style={{ fontSize: 12, color: "#555", lineHeight: 1.7, marginBottom: 14 }}>
-          App 廣告版位在 <strong>App Render（Native）</strong> 模式下，GAM 回傳結構化資料，由 App 自行組裝畫面。<br/>
-          本工具基於 Google 官方 Native Template，讓設計師即時調整樣式、預覽效果、匯出 PNG 貼到 Figma 確認。
-        </div>
-        <CollapsibleSection title="可調整 vs 不可調整">
-          <div style={{ display: "flex", gap: 20, flexWrap: "wrap" }}>
-            <div style={{ flex: 1, minWidth: 140 }}>
-              <div style={{ display: "flex", alignItems: "center", gap: 5, marginBottom: 6 }}>
-                <div style={{ width: 12, height: 12, border: "2px solid #FF6B35", borderRadius: 2 }} />
-                <span style={{ fontSize: 11, fontWeight: 600, color: "#FF6B35" }}>可調整（樣式）</span>
-              </div>
-              <ul style={{ margin: 0, paddingLeft: 18, fontSize: 11, color: "#555", lineHeight: 1.8 }}>
-                <li>整體背景色</li><li>標題 — 字體、字級、字色、背景色</li><li>廣告主名稱 — 同上</li><li>描述文字 — 同上</li><li>CTA 按鈕 — 同上</li>
-              </ul>
-            </div>
-            <div style={{ flex: 1, minWidth: 140 }}>
-              <div style={{ display: "flex", alignItems: "center", gap: 5, marginBottom: 6 }}>
-                <div style={{ width: 12, height: 12, background: "#e0e0e0", borderRadius: 2, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 6 }}>🔒</div>
-                <span style={{ fontSize: 11, fontWeight: 600, color: "#999" }}>不可調整（結構）</span>
-              </div>
-              <ul style={{ margin: 0, paddingLeft: 18, fontSize: 11, color: "#999", lineHeight: 1.8 }}>
-                <li>Media / Image 區域</li><li>Icon 位置</li><li>AdChoices 標記</li><li>元素排列順序</li>
-              </ul>
-            </div>
-          </div>
-          <div style={{ marginTop: 10, padding: "8px 10px", background: "#FFF8E1", borderRadius: 4, fontSize: 11, color: "#8D6E00", lineHeight: 1.6 }}>
-            ⚠ 若需更改結構或排列，需走 Custom Rendering（非 Template）路線，開發成本較高。
-          </div>
-        </CollapsibleSection>
-        <CollapsibleSection title="GAM 回傳欄位說明">
-          <div style={{ fontSize: 11, color: "#444", lineHeight: 1.7 }}>
-            <strong>必填欄位</strong>（一定會有）：標題 (Headline)、主圖 (Image)、CTA 按鈕<br/>
-            <strong>選填欄位</strong>（可能為空）：描述文字 (Body)、廣告主名稱 / Icon、Star rating<br/>
-            <span style={{ color: "#888" }}>→ 設計稿以全部欄位都有的狀態設計，另需標注「欄位為空時的處理方式」</span><br/>
-            <span style={{ color: "#888" }}>→ 下方「欄位模擬」可切換選填欄位，預覽各種缺失狀態</span>
-          </div>
-        </CollapsibleSection>
-      </div>
-
-      {/* Template selector */}
-      <div style={{ display: "flex", gap: 8, padding: "12px 20px", borderBottom: "1px solid #eee" }}>
-        {Object.entries(TEMPLATES).map(([k, { label, description }]) => (
-          <button key={k} onClick={() => setTemplate(k)}
-            style={{ flex: 1, padding: "8px 12px", border: template === k ? "2px solid #2962FF" : "1px solid #ddd",
-              borderRadius: 8, background: template === k ? "#EEF2FF" : "#fafafa", cursor: "pointer", textAlign: "left" }}>
-            <div style={{ fontSize: 13, fontWeight: 600, color: template === k ? "#2962FF" : "#333" }}>{label}</div>
-            <div style={{ fontSize: 10, color: "#888", marginTop: 2 }}>{description}</div>
-          </button>
-        ))}
-      </div>
-
-      {/* Image uploads */}
-      <div style={{ padding: "10px 20px", borderBottom: "1px solid #eee" }}>
-        <div style={{ fontSize: 11, fontWeight: 600, color: "#555", marginBottom: 6 }}>素材上傳（模擬真實廣告畫面）</div>
-        <ImageUpload label="主圖 Media" hint="不限尺寸，建議 1.91:1 或 1:1，≥1200px寬" accept="image/jpeg,image/png,image/gif,image/webp"
-          currentUrl={mediaUrl} onUpload={setMediaUrl} onClear={() => setMediaUrl(null)} aspectHint="wide" />
-        <ImageUpload label="Icon 圖示" hint="不限尺寸，建議 1:1 正方形，≥128px" accept="image/jpeg,image/png"
-          currentUrl={iconUrl} onUpload={setIconUrl} onClear={() => setIconUrl(null)} aspectHint="square" />
-      </div>
-
-      {/* Field toggles */}
-      <div style={{ padding: "12px 20px", borderBottom: "1px solid #eee" }}>
-        <div style={{ fontSize: 11, fontWeight: 600, color: "#555", marginBottom: 8, display: "flex", alignItems: "center", gap: 6 }}>
-          <span>欄位模擬</span>
-          <span style={{ fontSize: 9, color: "#888", fontWeight: 400, background: "#f5f5f5", padding: "2px 6px", borderRadius: 3 }}>
-            切換選填欄位，模擬 GAM 未提供該資料時的畫面
-          </span>
-        </div>
-        <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
-          <ToggleChip label="標題" active={true} required={true} />
-          <ToggleChip label="主圖" active={true} required={true} />
-          <ToggleChip label="CTA" active={true} required={true} />
-          {OPTIONAL_FIELDS.map(f => (
-            <ToggleChip key={f.key} label={f.label} active={visibility[f.key]} onClick={() => toggleVis(f.key)} />
-          ))}
-        </div>
-      </div>
-
-      {/* Preview */}
-      <div style={{ padding: "20px", display: "flex", flexDirection: "column", alignItems: "center", gap: 12,
-        background: "repeating-conic-gradient(#f0f0f0 0% 25%, #fafafa 0% 50%) 50%/20px 20px",
-        borderBottom: "1px solid #eee", minHeight: template === "medium" ? 340 : 140 }}>
-        <div style={{ fontSize: 10, color: "#999", letterSpacing: 1, textTransform: "uppercase", display: "flex", alignItems: "center", gap: 8 }}>
-          <span>即時預覽 — {TEMPLATES[template].label}</span>
-          {hasHidden && <span style={{ background: "#FFF3E0", color: "#E65100", padding: "2px 6px", borderRadius: 3, fontSize: 9, fontWeight: 600 }}>缺失欄位模擬中</span>}
-        </div>
-        <div ref={previewRef}>
-          <Tmpl styles={styles} highlightZone={highlightZone} visibility={visibility} mediaUrl={mediaUrl} iconUrl={iconUrl} />
-        </div>
-      </div>
-
-      {/* Export */}
-      <div style={{ display: "flex", gap: 8, padding: "10px 20px", borderBottom: "1px solid #eee", alignItems: "center" }}>
-        <button onClick={exportPNG}
-          style={{ flex: 1, padding: "10px", background: "#2962FF", color: "#fff", border: "none", borderRadius: 6, fontSize: 13, fontWeight: 600, cursor: "pointer" }}>
-          ⬇ 下載 PNG
-        </button>
-        <button onClick={exportJSON}
-          style={{ flex: 1, padding: "10px", background: jsonCopied ? "#E8F5E9" : "#fff",
-            color: jsonCopied ? "#2E7D32" : "#333", border: jsonCopied ? "1px solid #A5D6A7" : "1px solid #ddd",
-            borderRadius: 6, fontSize: 13, fontWeight: 500, cursor: "pointer", transition: "all 0.2s" }}>
-          {jsonCopied ? "✓ 已複製" : "📋 複製 JSON"}
-        </button>
-        <button onClick={resetAll}
-          style={{ padding: "10px 14px", background: "#fff", color: "#999", border: "1px solid #eee", borderRadius: 6, fontSize: 12, cursor: "pointer" }}>
-          ↺ 重置
-        </button>
-      </div>
-      {exportMsg && <div style={{ padding: "8px 20px", background: "#E8F5E9", color: "#2E7D32", fontSize: 12, fontWeight: 500, textAlign: "center" }}>{exportMsg}</div>}
-
-      {/* Params */}
-      <div>
-        <div style={{ padding: "12px 20px 6px", fontSize: 11, color: "#999", letterSpacing: 1, textTransform: "uppercase" }}>
-          參數調整（hover 群組可高亮預覽區域）
-        </div>
-        {PARAM_GROUPS.map(g => {
-          const isExp = expandedGroup === g.key;
-          const isHid = g.optionalFieldKey && !visibility[g.optionalFieldKey];
-          return (
-            <div key={g.key} style={{ borderBottom: "1px solid #f0f0f0", opacity: isHid ? 0.4 : 1, transition: "opacity 0.15s" }}
-              onMouseEnter={() => !isHid && setHighlightZone(g.key)} onMouseLeave={() => setHighlightZone(null)}>
-              <button onClick={() => !isHid && setExpandedGroup(isExp ? null : g.key)}
-                style={{ width: "100%", display: "flex", alignItems: "center", gap: 8, padding: "10px 20px",
-                  border: "none", background: isExp && !isHid ? "#fafafa" : "transparent",
-                  cursor: isHid ? "default" : "pointer", textAlign: "left" }}>
-                <span style={{ width: 28, height: 28, display: "flex", alignItems: "center", justifyContent: "center",
-                  background: highlightZone === g.key && !isHid ? "#FF6B35" : "#f0f0f0",
-                  color: highlightZone === g.key && !isHid ? "#fff" : "#666",
-                  borderRadius: 6, fontSize: 11, fontWeight: 700, fontFamily: "system-ui" }}>{g.icon}</span>
-                <span style={{ flex: 1, fontSize: 13, fontWeight: 500, color: isHid ? "#bbb" : "#333" }}>
-                  {g.label}{isHid && <span style={{ fontSize: 10, color: "#ccc", marginLeft: 6 }}>(已隱藏)</span>}
-                </span>
-                <span style={{ fontSize: 12, color: "#ccc", transform: isExp && !isHid ? "rotate(90deg)" : "none", transition: "transform 0.15s" }}>▶</span>
-              </button>
-              {isExp && !isHid && (
-                <div style={{ padding: "4px 20px 14px 56px" }}>
-                  {g.params.map(p => (
-                    <div key={p.key} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 8, gap: 12 }}>
-                      <label style={{ fontSize: 12, color: "#555", minWidth: 56, flexShrink: 0 }}>{p.label}</label>
-                      {p.type === "color" && <ColorInput value={styles[p.key]} onChange={v => updateStyle(p.key, v)} />}
-                      {p.type === "font" && (
-                        <select value={styles[p.key]} onChange={e => updateStyle(p.key, e.target.value)}
-                          style={{ fontSize: 12, padding: "4px 6px", border: "1px solid #d0d0d0", borderRadius: 4, background: "#fafafa", minWidth: 130 }}>
-                          {FONT_OPTIONS.map(f => <option key={f} value={f}>{f}</option>)}
-                        </select>
-                      )}
-                      {p.type === "number" && (
-                        <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
-                          <input type="range" min={p.min} max={p.max} value={styles[p.key]}
-                            onChange={e => updateStyle(p.key, Number(e.target.value))} style={{ width: 80 }} />
-                          <span style={{ fontSize: 12, fontFamily: "monospace", color: "#666", minWidth: 24 }}>{styles[p.key]}</span>
-                        </div>
-                      )}
-                      {p.type === "text" && (
-                        <input type="text" value={styles[p.key]} onChange={e => updateStyle(p.key, e.target.value)}
-                          style={{ fontSize: 12, padding: "4px 6px", border: "1px solid #d0d0d0", borderRadius: 4, background: "#fafafa", minWidth: 160, flex: 1 }} />
-                      )}
-                    </div>
-                  ))}
-                </div>
-              )}
-            </div>
-          );
-        })}
-      </div>
-
-      {/* Doc links */}
-      <div style={{ padding: "14px 20px", background: "#f8f9fa", borderTop: "1px solid #eee" }}>
-        <div style={{ fontSize: 11, fontWeight: 600, color: "#888", marginBottom: 8 }}>官方參考文件</div>
-        <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
-          {[
-            { l: "📄 Template (Android)", u: "https://developers.google.com/ad-manager/mobile-ads-sdk/android/native/templates" },
-            { l: "📄 Template (iOS)", u: "https://developers.google.com/ad-manager/mobile-ads-sdk/ios/native/templates" },
-            { l: "📄 Custom Rendering", u: "https://developers.google.com/ad-manager/mobile-ads-sdk/android/native/advanced" },
-            { l: "📄 Native + Banner", u: "https://developers.google.com/ad-manager/mobile-ads-sdk/android/native-banner" },
-          ].map(({ l, u }) => (
-            <a key={u} href={u} target="_blank" rel="noopener noreferrer"
-              style={{ fontSize: 11, color: "#2962FF", textDecoration: "none", padding: "4px 10px", background: "#EEF2FF", borderRadius: 4, border: "1px solid #dce3f0" }}>{l}</a>
-          ))}
-        </div>
-      </div>
-    </div>
-  );
-}
-
-ReactDOM.render(React.createElement(App), document.getElementById("root"));
+  /* ── Init ── */
+  render();
+})();
 </script>
 </body>
 </html>
