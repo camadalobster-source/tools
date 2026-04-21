@@ -9,10 +9,15 @@ import { join, resolve, dirname } from 'path';
 import { tmpdir } from 'os';
 import { randomUUID } from 'crypto';
 import { fileURLToPath } from 'url';
+import dotenv from 'dotenv';
 
 // 用 import.meta.url 定位 core 模組的絕對路徑，避免相對路徑在 build 時出錯
 const __dirname = dirname(fileURLToPath(import.meta.url));
-const CORE_DIR = resolve(__dirname, '..', '..', '..', '..', 'core');
+const PROJECT_ROOT = resolve(__dirname, '..', '..', '..', '..');
+const CORE_DIR = resolve(PROJECT_ROOT, 'core');
+
+// 載入專案根目錄的 .env（而非 web/.env）
+dotenv.config({ path: resolve(PROJECT_ROOT, '.env') });
 
 async function loadCore() {
   const configLoader = await import(/* webpackIgnore: true */ `${CORE_DIR}/config-loader.js`);
