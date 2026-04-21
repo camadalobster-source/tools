@@ -4,8 +4,10 @@
 # ============================================
 
 # ClickUp 設定
+# workspace_id / default_status / task_type 皆可透過環境變數覆蓋
+# 環境變數優先於此處設定（見 config-loader.js）
 clickup:
-  workspace_id: "9018900474"
+  workspace_id: ""          # 或設 env: CLICKUP_WORKSPACE_ID
   default_status: "NEEDS FIX"
   task_type: "Bug"
   include_priority: false
@@ -25,12 +27,12 @@ report:
   template_file: "templates/bug-report.md"
 
 # AI 分析設定
+# model 可透過 env: AI_MODEL 覆蓋
 ai:
   model: "claude-sonnet-4-6"
   max_tokens: 2048
-  # 提示 AI 分析截圖時的系統提示
   system_prompt: |
-    你是一位資深的 QA 工程師，專門負責 TVBS 新聞網改版專案的 Bug 分析。
+    你是一位資深的 QA 工程師，專門負責網站改版專案的 Bug 分析。
     請根據截圖和使用者描述，產出結構化的 Bug Report。
     務必比對提供的 AC 驗收標準，找出最相關的 AC 項目。
 

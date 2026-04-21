@@ -1,6 +1,10 @@
 node_modules/
+web/node_modules/
 .env
 .next/
+web/.next/
 dist/
 *.log
 .DS_Store
+package-lock.json
+web/package-lock.json

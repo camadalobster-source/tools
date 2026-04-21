@@ -17,11 +17,27 @@ const _pageACs = new Map();
 
 /**
  * 載入主設定檔 config.yaml
+ * 環境變數可覆蓋 YAML 中的設定（方便不同專案/團隊使用）
  */
 export function loadConfig() {
   if (_config) return _config;
   const raw = readFileSync(resolve(CONFIG_DIR, 'config.yaml'), 'utf-8');
-  _config = yaml.load(raw);
+  const cfg = yaml.load(raw);
+
+  // 環境變數覆蓋：ClickUp
+  if (process.env.CLICKUP_WORKSPACE_ID) {
+    cfg.clickup.workspace_id = process.env.CLICKUP_WORKSPACE_ID;
+  }
+  if (process.env.CLICKUP_DEFAULT_STATUS) {
+    cfg.clickup.default_status = process.env.CLICKUP_DEFAULT_STATUS;
+  }
+
+  // 環境變數覆蓋：AI
+  if (process.env.AI_MODEL) {
+    cfg.ai.model = process.env.AI_MODEL;
+  }
+
+  _config = cfg;
   return _config;
 }
 
