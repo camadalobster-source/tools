@@ -1,0 +1,54 @@
+# ============================================
+# TVBS Bug Reporter — 全域設定檔
+# 修改此檔案即可調整建單規則，不需改程式碼
+# ============================================
+
+# ClickUp 設定
+clickup:
+  workspace_id: "9018900474"
+  default_status: "NEEDS FIX"
+  task_type: "Bug"
+  include_priority: false
+  include_tags: false
+
+# Subtask 命名規則
+# 可用變數：{page}, {summary}, {env}, {device}, {ac_id}
+naming:
+  pattern: "[{page}] - {summary}"
+
+# Bug Report 內容控制
+report:
+  include_investigation: false
+  include_priority_suggestion: false
+  default_env: "Testing 測試站"
+  default_device: "Desktop"
+  template_file: "templates/bug-report.md"
+
+# AI 分析設定
+ai:
+  model: "claude-sonnet-4-6"
+  max_tokens: 2048
+  # 提示 AI 分析截圖時的系統提示
+  system_prompt: |
+    你是一位資深的 QA 工程師，專門負責 TVBS 新聞網改版專案的 Bug 分析。
+    請根據截圖和使用者描述，產出結構化的 Bug Report。
+    務必比對提供的 AC 驗收標準，找出最相關的 AC 項目。
+
+# 頁面註冊（新增頁面只要加設定 + 對應 AC YAML）
+pages:
+  article:
+    display_name: "文章頁"
+    ac_file: "pages/article.yaml"
+    test_url_pattern: "https://news-neo.tvbs-testing.com.tw/{category}/{id}"
+  video:
+    display_name: "影音頁"
+    ac_file: "pages/video.yaml"
+    test_url_pattern: "https://news-neo.tvbs-testing.com.tw/playlists"
+  home:
+    display_name: "首頁"
+    ac_file: "pages/home.yaml"
+    test_url_pattern: "https://news-neo.tvbs-testing.com.tw"
+  category:
+    display_name: "分類頁"
+    ac_file: "pages/category.yaml"
+    test_url_pattern: "https://news-neo.tvbs-testing.com.tw/{category}"

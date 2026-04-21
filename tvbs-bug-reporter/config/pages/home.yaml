@@ -1,0 +1,13 @@
+# 首頁 AC 定義（placeholder）
+# 待補充完整 AC 清單
+
+page:
+  key: home
+  name: 首頁
+  clickup_task: ""  # 填入對應的 ClickUp Task ID
+
+acceptance_criteria: []
+  # 格式範例：
+  # - id: "AC-1.1"
+  #   description: "首頁 Hero Banner 顯示正確"
+  #   area: "Hero"

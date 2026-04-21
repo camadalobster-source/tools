@@ -1,0 +1,13 @@
+# 分類頁 AC 定義（placeholder）
+# 待補充完整 AC 清單
+
+page:
+  key: category
+  name: 分類頁
+  clickup_task: ""  # 填入對應的 ClickUp Task ID
+
+acceptance_criteria: []
+  # 格式範例：
+  # - id: "AC-1.1"
+  #   description: "分類頁文章列表顯示正確"
+  #   area: "列表"

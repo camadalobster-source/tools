@@ -1,0 +1,96 @@
+# 影音頁 — AC 驗收標準
+# 來源：ClickUp NS-2263 Web ③ Video Overview Pages
+
+page_name: "影音頁"
+test_url_pattern: "https://news-neo.tvbs-testing.com.tw/playlists"
+
+sections:
+  - name: "路由與參數"
+    acs:
+      - id: "AC-1.1"
+        title: "影音頁面路由"
+        expected: "Hub: /playlists；Playlist 列表頁: /playlists/{playlist_id}；Player: /videos/{video_id}?playlist={playlist_id}"
+      - id: "AC-1.2"
+        title: "Player 頁 URL 與 Canonical"
+        expected: "不論 URL 是否帶 playlist_id，canonical 與 og:url 一律指向 /videos/{video_id} 無參數版本"
+
+  - name: "Hub - Hero 直播區塊"
+    acs:
+      - id: "AC-2.1"
+        title: "Hero 直播標題與來源"
+        expected: "固定顯示標題「TVBS 網路新聞24小時直播」，固定直播 YouTube ID: m_dhMSvUCIc"
+      - id: "AC-2.2"
+        title: "Hero 直播播放器規格"
+        expected: "全寬或滿版 16:9 播放器，需提供 Unmute 按鈕"
+      - id: "AC-2.3"
+        title: "Hero 直播 Autoplay 與 Overlay"
+        expected: "Autoplay 一律 muted；失敗時顯示 Overlay（Poster + Play Icon），點擊可手動播放"
+
+  - name: "Hub - VOD Playlist 區塊"
+    acs:
+      - id: "AC-3.1"
+        title: "VOD 區塊佈局（Desktop）"
+        expected: "每組 Playlist 左 66-70% 大圖卡、右 30-33% 3 小圖垂直排列。取最新 4 則影片，依 publishedAt DESC"
+      - id: "AC-3.2"
+        title: "VOD 區塊佈局（Mobile）"
+        expected: "每組 Playlist 上大圖卡全寬、下 3 小圖垂直堆疊"
+      - id: "AC-3.3"
+        title: "影音標題截斷"
+        expected: "大圖/小圖影音標題至多一行，超過以 ... 截斷"
+      - id: "AC-3.5"
+        title: "圖卡點擊導向"
+        expected: "點擊任一圖卡導向 /videos/{id}?playlist={playlist_id}"
+      - id: "AC-3.6"
+        title: "更多影音新聞按鈕"
+        expected: "位於區塊底部，點擊導向 /playlists/{playlist_id}"
+      - id: "AC-3.7"
+        title: "空 Playlist 隱藏"
+        expected: "若某 Playlist API 回傳為空，該區塊隱藏"
+
+  - name: "Playlist 專屬列表頁"
+    acs:
+      - id: "AC-4.1"
+        title: "分類 Tab"
+        expected: "Header 下方顯示分類 Tab，對應 Hub 各 VOD Playlist。當前 playlist_id 所屬 Tab 為 Active。桌機版超過寬度時顯示左右箭頭"
+      - id: "AC-4.2"
+        title: "影片列表"
+        expected: "固定顯示 24 則，依 publishedAt DESC。每則顯示標題、縮圖、發佈時間；標題最多一行截斷"
+      - id: "AC-4.3"
+        title: "列表點擊導向"
+        expected: "點擊任一影片導向 /videos/{video_id}?playlist={playlist_id}"
+
+  - name: "Player - 麵包屑"
+    acs:
+      - id: "AC-5.1"
+        title: "麵包屑層級（有效 playlist_id）"
+        expected: "三層：首頁 / 影音總覽 / 該 playlist 對應列表頁名稱"
+      - id: "AC-5.2"
+        title: "麵包屑層級（無或無效 playlist_id）"
+        expected: "僅到「影音總覽」，不顯示第三層"
+
+  - name: "Player - 下方導覽清單"
+    acs:
+      - id: "AC-7.1"
+        title: "清單顯示規則（有效 playlist_id）"
+        expected: "顯示該 playlist 最新 24 則，依 publishedAt DESC"
+      - id: "AC-7.2"
+        title: "清單顯示規則（無 playlist_id）"
+        expected: "顯示四個 playlist 合併、依 publishedAt DESC 取最新 24 則"
+      - id: "AC-7.3"
+        title: "清單顯示規則（無效 playlist_id）"
+        expected: "不 render 下方清單區塊"
+
+  - name: "錯誤處理與降級"
+    acs:
+      - id: "AC-10.1"
+        title: "縮圖降級載入"
+        expected: "Live 直播區塊使用 Live 專屬預設圖片，不走 VOD 降級邏輯。VOD Level 1: maxresdefault → hqdefault；Level 2: Default image + Play Button"
+      - id: "AC-10.2"
+        title: "影片失效（Private / Deleted）"
+        expected: "直接顯示 YT iframe 原生錯誤畫面；不隱藏、不自訂 Overlay、不實作「播放下一則」；下方清單依 playlist_id 有效性正常顯示"
+
+  - name: "後端與資料"
+    acs:
+      - id: "AC-9.2"
+        title: "Playlist 名稱過濾"
+        expected: "後端寫死播放清單名稱，套用範圍：Hub 區塊標題、Playlist Tab 文字、Player 麵包屑第三層"
